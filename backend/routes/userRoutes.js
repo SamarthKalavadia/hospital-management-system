@@ -176,19 +176,22 @@ router.post("/register-init", async (req, res) => {
 
     await user.save();
 
-    // send OTP email (uses existing util)
-    try {
-      const sendOtp = require("../utils/sendOtp");
-      await sendOtp(email, otp);
-    } catch (e) {
-      console.error("Failed to send OTP:", e);
-    }
-
+    // 1. Send immediate success response after saving patient record to DB
     res.json({
       success: true,
-      message: "OTP sent to email",
+      message: "Patient record created. OTP is being sent to your email.",
       email: user.email
     });
+
+    // 2. Execute background task for OTP email
+    (async () => {
+      try {
+        const sendOtp = require("../utils/sendOtp");
+        await sendOtp(email, otp);
+      } catch (e) {
+        console.error(`[BG_TASK_ERROR] Failed to send OTP email to ${email}:`, e);
+      }
+    })();
   } catch (err) {
     console.error(err);
     res.status(500).json({
@@ -552,21 +555,25 @@ router.post("/invite", auth, async (req, res) => {
 
     await user.save();
 
-    if (isPlaceholder) {
-      return res.json({ 
-        success: true, 
-        message: "Patient created with placeholder email",
-        user: { id: user._id, email: user.email }
-      });
-    }
+    // 1. Send immediate success response after saving to database
+    res.json({ 
+      success: true, 
+      message: isPlaceholder ? "Patient created with placeholder email" : "Patient created successfully. Invitation is being sent.",
+      user: { id: user._id, email: user.email }
+    });
 
-    // Send Email for real emails
-    try {
-      const sendActivation = require('../utils/sendActivation');
-      await sendActivation(finalEmail, token, req.headers.host);
-      res.json({ success: true, message: "Invitation sent" });
-    } catch (e) {
-      res.json({ success: true, message: "Patient created but failed to send email" });
+    // 2. Execute background tasks (emails, etc.) AFTER response is sent to improve performance
+    if (!isPlaceholder) {
+      const host = req.headers.host; // Capture host from request object
+      // Wrapped in non-blocking async scope
+      (async () => {
+        try {
+          const sendActivation = require('../utils/sendActivation');
+          await sendActivation(finalEmail, token, host);
+        } catch (e) {
+          console.error(`[BG_TASK_ERROR] Failed to send activation email to ${finalEmail}:`, e);
+        }
+      })();
     }
 
   } catch (e) {
