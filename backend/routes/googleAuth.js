@@ -30,14 +30,14 @@ router.get("/google/callback", (req, res, next) => {
         if (profile.email) params.set("email", profile.email);
         if (profile.name) params.set("name", profile.name);
 
-        return res.redirect(`${process.env.FRONTEND_URL || 'http://127.0.0.1:5501'}/hospital-management-system/frontend/login.html?${params.toString()}`);
+        return res.redirect(`${process.env.FRONTEND_URL || 'http://127.0.0.1:5501'}/login.html?${params.toString()}`);
       }
 
       if (info && info.message === "NOT_A_PATIENT") {
-        return res.redirect(`${process.env.FRONTEND_URL || 'http://127.0.0.1:5501'}/hospital-management-system/frontend/login.html?error=not_patient`);
+        return res.redirect(`${process.env.FRONTEND_URL || 'http://127.0.0.1:5501'}/login.html?error=not_patient`);
       }
 
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://127.0.0.1:5501'}/hospital-management-system/frontend/login.html?error=not_registered`);
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://127.0.0.1:5501'}/login.html?error=not_registered`);
     }
 
     const token = jwt.sign({
@@ -57,7 +57,7 @@ router.get("/google/callback", (req, res, next) => {
     };
 
     const userParam = encodeURIComponent(JSON.stringify(smallUser));
-    return res.redirect(`${process.env.FRONTEND_URL || 'http://127.0.0.1:5501'}/hospital-management-system/frontend/patient-dashboard.html?token=${token}&user=${userParam}`);
+    return res.redirect(`${process.env.FRONTEND_URL || 'http://127.0.0.1:5501'}/patient-dashboard.html?token=${token}&user=${userParam}`);
   })(req, res, next);
 });
 
