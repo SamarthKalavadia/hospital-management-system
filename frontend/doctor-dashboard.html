@@ -4659,19 +4659,23 @@
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
           body: JSON.stringify(data)
         });
+
         const d = await res.json();
-        if (d.success) {
+
+        if (res.ok && d.success) {
           window.showToast("success", "Patient created successfully. Activation email sent.");
           e.target.reset();
+          if (typeof updatePreview === 'function') updatePreview();
         } else {
           window.showToast("error", d.message || "Failed to create patient");
         }
       } catch (err) {
-        console.error(err);
-        window.showToast("error", "Server error");
+        console.error("Create Patient Error:", err);
+        window.showToast("error", "Server communication error. Please try again.");
+      } finally {
+        btn.innerText = loadText;
+        btn.disabled = false;
       }
-      btn.innerText = loadText;
-      btn.disabled = false;
     }
 
     // Modal behavior for logout
