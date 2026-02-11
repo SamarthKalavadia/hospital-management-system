@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="js/toast.js" defer></script>
+  <script src="js/validation.js" defer></script>
+  <title>Patient Registration | Samyak Ayurvedic Hospital</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="styles/tokens.css">
+
+  <style>
+    /* CSS Variables for Theme System */
+    :root {
+      /* Light Mode (Default) */
+      --bg-main: rgba(255, 255, 255, 0.82);
+      --bg-body: url("assets/hero.jpg") center/cover no-repeat fixed;
+      --bg-card: #fff;
+      --bg-sidebar: #fff;
+      --bg-input: #fff;
+      --bg-modal: rgba(0, 0, 0, 0.4);
+
+      --bg-primary: #155c3b;
+      --bg-primary-hover: #0d462b;
+      --bg-secondary: #eaf4ee;
+      --bg-tertiary: #f3f8f5;
+      --bg-muted: #f8fbf9;
+
+      --text-primary: #155c3b;
+      --text-secondary: #4f6f60;
+      --text-muted: #6b8a7a;
+      --text-dark: #2c3e50;
+      --text-label: #7f9f8e;
+      --text-white: #fff;
+
+      --border-light: #eaf4ee;
+      --border-muted: #f3f8f5;
+      --border-subtle: #ddd;
+
+      --shadow-card: 0 22px 46px rgba(0, 0, 0, 0.2);
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+      --shadow-hover: 0 10px 25px rgba(21, 92, 59, 0.1);
+    }
+
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg-body);
+      transition: background-color 0.3s ease;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-main);
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      width: 420px;
+      background: var(--bg-card);
+      border-radius: 22px;
+      padding: 36px;
+      box-shadow: var(--shadow-card);
+      animation: fadeIn .4s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    .back {
+      color: var(--text-primary);
+      font-weight: 600;
+      margin-bottom: 18px;
+      display: inline-block;
+      text-decoration: none;
+    }
+
+    .logo {
+      width: 46px;
+      display: block;
+      margin: 0 auto 10px;
+    }
+
+    h2 {
+      text-align: center;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    p {
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 22px;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 30px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-input);
+      color: var(--text-dark);
+      margin-bottom: 14px;
+      font-size: 14px;
+    }
+
+    /* Fix for age and gender inputs which had inline styles in original but we standardize them via CSS here for cleaner theme support */
+    #age,
+    #gender {
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-input) !important;
+      color: var(--text-dark) !important;
+    }
+
+    button.primary {
+      width: 100%;
+      padding: 13px;
+      border-radius: 30px;
+      border: none;
+      background: var(--bg-primary);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: .3s;
+    }
+
+    button.primary:hover {
+      background: var(--bg-primary-hover);
+      transform: translateY(-2px);
+    }
+
+    /* OR LINE */
+    .or {
+      text-align: center;
+      margin: 18px 0 14px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    /* GOOGLE BUTTON */
+    .google-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 30px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+      color: var(--text-dark);
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: .3s;
+    }
+
+    .google-btn img {
+      width: 18px;
+    }
+
+    .google-btn:hover {
+      background: var(--bg-muted);
+      text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="overlay"></div>
+
+  <div class="container">
+    <div class="card">
+
+      <a href="login.html" class="back">← Back to Login</a>
+
+      <img src="assets/logo.png" class="logo" alt="Samyak Ayurvedic Hospital Logo">
+
+      <h2>Patient Registration</h2>
+      <p>Create your account to book appointments</p>
+
+      <!-- NORMAL REGISTER -->
+      <form id="registerForm">
+        <div class="row">
+          <input type="text" placeholder="First Name" id="firstName" required>
+          <input type="text" placeholder="Last Name" id="lastName" required>
+        </div>
+
+        <input type="email" placeholder="Email" id="email" required>
+        <input type="tel" placeholder="Phone (10 digits)" id="phone" inputmode="numeric" pattern="\d{10}" minlength="10"
+          maxlength="10" required>
+
+        <input type="number" placeholder="Age" id="age" min="0" max="120"
+          style="margin-bottom:14px;padding:12px 16px;border-radius:30px;border:1px solid var(--border-subtle);font-size:14px;" />
+
+        <select id="gender" aria-label="Select Gender"
+          style="width:100%;padding:12px 16px;border-radius:30px;border:1px solid var(--border-subtle);margin-bottom:14px;font-size:14px">
+          <option value="">Select Gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
+
+        <input type="password" placeholder="Password" id="password" required>
+        <input type="password" placeholder="Confirm Password" id="confirm" required>
+
+        <button class="primary" id="registerBtn" type="submit">Register</button>
+      </form>
+
+      <!-- OTP SECTION (hidden until /register-init succeeds) -->
+      <div id="otpSection" style="display:none;margin-top:14px;">
+        <div class="row">
+          <input type="text" id="otpInput" placeholder="Enter OTP" inputmode="numeric" pattern="\\d{6}" maxlength="6"
+            style="flex:1" />
+        </div>
+        <div style="display:flex;gap:10px;margin-top:10px;">
+          <button class="primary" id="verifyOtpBtn" style="flex:1">Verify OTP</button>
+          <button class="primary" id="resendOtpBtn"
+            style="flex:1;background:var(--bg-card);color:var(--text-primary);border:1px solid var(--text-primary)">Resend</button>
+        </div>
+        <p id="otpNotice" style="margin-top:8px;color:var(--text-secondary);font-size:13px"></p>
+      </div>
+
+      <div class="or">OR</div>
+
+      <!-- GOOGLE REGISTER -->
+      <a href="http://localhost:5001/api/auth/google" class="google-btn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo">
+        Continue with Google
+      </a>
+
+    </div>
+  </div>
+  <script>
+    const params = new URLSearchParams(location.search);
+
+    const passwordInput = document.getElementById("password");
+    const confirmInput = document.getElementById("confirm");
+
+    if (params.get("google") === "true") {
+      document.getElementById("email").value = params.get("email") || "";
+      document.getElementById("firstName").value =
+        (params.get("name") || "").split(" ")[0];
+      document.getElementById("lastName").value =
+        (params.get("name") || "").split(" ")[1] || "";
+
+      if (passwordInput) {
+        passwordInput.style.display = "none";
+        passwordInput.disabled = true;
+        passwordInput.removeAttribute("required");
+      }
+      if (confirmInput) {
+        confirmInput.style.display = "none";
+        confirmInput.disabled = true;
+        confirmInput.removeAttribute("required");
+      }
+    } else {
+      if (passwordInput) {
+        passwordInput.style.display = "";
+        passwordInput.disabled = false;
+        passwordInput.required = true;
+      }
+      if (confirmInput) {
+        confirmInput.style.display = "";
+        confirmInput.disabled = false;
+        confirmInput.required = true;
+      }
+    }
+  </script>
+  <script>
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const firstNameEl = document.getElementById("firstName");
+      const lastNameEl = document.getElementById("lastName");
+      const emailEl = document.getElementById("email");
+      const phoneEl = document.getElementById("phone");
+      const passwordEl = document.getElementById("password");
+      const confirmEl = document.getElementById("confirm");
+
+      // Basic required checks
+      if (!firstNameEl.value.trim() || !lastNameEl.value.trim() || !emailEl.value.trim() || !phoneEl.value.trim()) {
+        window.showToast("error", "Please fill all required fields");
+        return;
+      }
+
+      // Phone must be exactly 10 digits
+      const phoneVal = phoneEl.value.replace(/\D/g, "");
+      if (!/^\d{10}$/.test(phoneVal)) {
+        window.showToast("error", "Phone number must be exactly 10 digits");
+        return;
+      }
+
+      // If password fields are visible/required, validate
+      if (passwordEl && !passwordEl.disabled) {
+        if (!passwordEl.value || !confirmEl.value) {
+          window.showToast("error", "Please provide password and confirm it");
+          return;
+        }
+        if (passwordEl.value !== confirmEl.value) {
+          window.showToast("error", "Passwords do not match");
+          return;
+        }
+      }
+
+      const ageValRaw = document.getElementById('age').value;
+      const ageVal = ageValRaw ? parseInt(ageValRaw, 10) : undefined;
+
+      const data = {
+        firstName: firstNameEl.value.trim(),
+        lastName: lastNameEl.value.trim(),
+        email: emailEl.value.trim(),
+        phone: phoneVal,
+        age: typeof ageVal === 'number' && !isNaN(ageVal) ? ageVal : undefined,
+        gender: (document.getElementById('gender') && document.getElementById('gender').value) || undefined,
+        password: passwordEl && !passwordEl.disabled ? passwordEl.value : undefined,
+      };
+
+      try {
+        // start registration and send OTP
+        const res = await fetch("http://localhost:5001/api/users/register-init", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data),
+        });
+
+        const json = await res.json();
+        if (!json.success) {
+          window.showToast("error", json.message || "Registration failed");
+          return;
+        }
+
+        // show OTP section
+        document.getElementById("otpSection").style.display = "block";
+        document.getElementById("otpNotice").innerText = `OTP sent to ${json.email}. Valid for 5 minutes.`;
+        document.getElementById("registerBtn").disabled = true;
+
+        // store email in dataset for later calls
+        document.getElementById("registerForm").dataset.regEmail = data.email;
+      } catch (err) {
+        window.handleError(err, "Register Init");
+      }
+    });
+
+    // VERIFY OTP
+    document.getElementById("verifyOtpBtn").addEventListener("click", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("registerForm").dataset.regEmail;
+      const otp = document.getElementById("otpInput").value.trim();
+      if (!email || !otp) {
+        window.showToast("error", "Provide OTP");
+        return;
+      }
+
+      try {
+        const res = await fetch("http://localhost:5001/api/users/verify-otp", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email,
+            otp
+          })
+        });
+        const json = await res.json();
+        if (!json.success) {
+          window.showToast("error", json.message || "Invalid OTP");
+          return;
+        }
+
+        // success: save token and redirect
+        if (json.token) {
+          localStorage.setItem("token", json.token);
+          localStorage.setItem("user", JSON.stringify(Object.assign({}, json.user, {
+            name: (json.user.firstName || "") + (json.user.lastName ? ' ' + json.user.lastName : '')
+          })));
+          localStorage.setItem("userId", json.user._id);
+          localStorage.setItem("role", json.user.role || "patient");
+          location.href = "patient-dashboard.html";
+        } else {
+          window.showToast("success", "Verified. Please login.");
+          location.href = "login.html";
+        }
+      } catch (err) {
+        window.handleError(err, "Verify OTP");
+      }
+    });
+
+    // RESEND OTP
+    document.getElementById("resendOtpBtn").addEventListener("click", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("registerForm").dataset.regEmail || document.getElementById("email").value;
+      if (!email) {
+        window.showToast("error", "Email missing");
+        return;
+      }
+
+      try {
+        const res = await fetch("http://localhost:5001/api/users/resend-otp", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email
+          })
+        });
+        const json = await res.json();
+        if (!json.success) {
+          window.showToast("error", json.message || "Could not resend OTP");
+          return;
+        }
+        window.showToast("success", `OTP resent to ${email}.`);
+        document.getElementById("otpNotice").innerText = `OTP resent to ${email}.`;
+      } catch (err) {
+        window.handleError(err, "Resend OTP");
+      }
+    });
+  </script>
+</body>
+
+</html>

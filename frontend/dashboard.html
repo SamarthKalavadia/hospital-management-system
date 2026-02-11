@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="styles/tokens.css">
+
+  <style>
+    /* CSS Variables for Theme System */
+    :root {
+      /* Light Mode */
+      --bg-main: rgba(255, 255, 255, 0.82);
+      --bg-body: url("assets/hero.jpg") center/cover no-repeat fixed;
+      --bg-card: #fff;
+      --bg-sidebar: #fff;
+      --bg-input: #fff;
+      --bg-modal: rgba(0, 0, 0, 0.4);
+      --bg-primary: #155c3b;
+      --bg-primary-hover: #0d462b;
+      --bg-secondary: #eaf4ee;
+      --bg-tertiary: #f3f8f5;
+      --bg-muted: #f8fbf9;
+      --text-primary: #155c3b;
+      --text-secondary: #4f6f60;
+      --text-muted: #6b8a7a;
+      --text-dark: #2c3e50;
+      --text-label: #7f9f8e;
+      --text-white: #fff;
+      --border-light: #eaf4ee;
+      --border-muted: #f3f8f5;
+      --border-subtle: #ddd;
+      --shadow-card: 0 22px 46px rgba(0, 0, 0, 0.2);
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+      --shadow-hover: 0 10px 25px rgba(21, 92, 59, 0.1);
+    }
+
+
+    body {
+      margin: 0;
+      font-family: Segoe UI;
+      background: var(--bg-body);
+      color: var(--text-dark);
+      transition: background-color 0.3s ease;
+    }
+
+    header {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      padding: 16px;
+      text-align: center;
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      padding: 30px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      padding: 25px;
+      border-radius: 18px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card h2 {
+      color: var(--text-primary);
+      font-size: 36px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1 id="title">Dashboard</h1>
+  </header>
+
+  <div class="cards">
+    <div class="card">
+      <h3>Total</h3>
+      <h2 id="total">0</h2>
+    </div>
+
+    <div class="card">
+      <h3>Today</h3>
+      <h2 id="today">0</h2>
+    </div>
+
+    <div class="card">
+      <h3>Upcoming</h3>
+      <h2 id="upcoming">0</h2>
+    </div>
+  </div>
+
+  <script>
+
+    /* ================= GET JWT ================= */
+
+    const params = new URLSearchParams(window.location.search);
+    const tokenFromUrl = params.get("token");
+
+    if (tokenFromUrl) {
+      localStorage.setItem("token", tokenFromUrl);
+      window.history.replaceState({}, document.title, "dashboard.html");
+    }
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Not authenticated");
+      window.location.href = "login.html";
+    }
+
+    /* ================= DECODE JWT ================= */
+
+    function parseJwt(token) {
+      const base64 = token.split(".")[1];
+      return JSON.parse(atob(base64));
+    }
+
+    const user = parseJwt(token);
+
+    /* ================= UI ================= */
+
+    document.getElementById("title").innerText =
+      user.role === "doctor" ? "Doctor Dashboard" : "Patient Dashboard";
+
+    /* ================= FETCH DASHBOARD DATA ================= */
+
+    fetch(`http://localhost:5001/api/dashboard/${user.role}/${user.id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("total").innerText = data.total;
+        document.getElementById("today").innerText = data.today;
+        document.getElementById("upcoming").innerText = data.upcoming;
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Failed to load dashboard");
+      });
+  </script>
+
+</body>
+
+</html>

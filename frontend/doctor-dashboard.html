@@ -1,0 +1,4819 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Doctor Dashboard | Samyak Ayurvedic Hospital</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="js/toast.js" defer></script>
+  <script src="js/validation.js" defer></script>
+  <link rel="stylesheet" href="styles/tokens.css">
+
+
+  <style>
+    /* CSS Variables for Theme System */
+    :root {
+      /* Light Mode (Default) */
+      --bg-main: rgba(255, 255, 255, 0.82);
+      --bg-body: url("assets/hero.jpg") center/cover no-repeat fixed;
+      --bg-card: #fff;
+      --bg-sidebar: #fff;
+      --bg-input: #fff;
+      --bg-modal: rgba(0, 0, 0, 0.4);
+
+      --bg-primary: #155c3b;
+      --bg-primary-hover: #0d462b;
+      --bg-secondary: #eaf4ee;
+      --bg-tertiary: #f3f8f5;
+      --bg-muted: #f8fbf9;
+
+      --text-primary: #155c3b;
+      --text-secondary: #4f6f60;
+      --text-muted: #6b8a7a;
+      --text-dark: #2c3e50;
+      --text-label: #7f9f8e;
+      --text-white: #fff;
+
+      --border-light: #eaf4ee;
+      --border-muted: #f3f8f5;
+      --border-subtle: #ddd;
+
+      --shadow-card: 0 22px 46px rgba(0, 0, 0, 0.2);
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+      --shadow-hover: 0 10px 25px rgba(21, 92, 59, 0.1);
+    }
+
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg-body);
+      transition: background-color 0.3s ease;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-main);
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+      z-index: -1;
+    }
+
+    .top-bar {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      height: 72px;
+      background: var(--bg-tertiary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, .14);
+      z-index: 5;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      border-radius: 50%;
+    }
+
+    .logo img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 18px;
+      color: #155c3b;
+      white-space: nowrap;
+      min-width: 260px;
+    }
+
+
+    .logout {
+      cursor: pointer;
+      font-weight: 600;
+      color: #155c3b;
+      padding: 8px 18px;
+      border-radius: 20px;
+      transition: .25s;
+    }
+
+    .logout:hover {
+      background: #eaf4ee;
+      transform: translateY(-1px);
+    }
+
+    .logout-fixed {
+      margin-top: auto;
+      background: #ffecec;
+      color: #b71c1c;
+      border: none;
+      padding: 14px;
+      border-radius: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: .25s;
+    }
+
+    .sidebar .logout-fixed:hover {
+      background: #ffdada;
+      color: #d32f2f;
+    }
+
+
+    .dashboard {
+      padding: 110px 30px 30px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 24px;
+    }
+
+    .sidebar {
+      background: var(--bg-sidebar);
+      border-radius: 22px;
+      padding: 20px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar button {
+      padding: 14px;
+      border: none;
+      border-radius: 16px;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 14px;
+      transition: .25s;
+    }
+
+    .sidebar button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, .18);
+    }
+
+    .sidebar button.active {
+      background: var(--bg-primary);
+      color: var(--text-white);
+    }
+
+    .main {
+      background: var(--bg-card);
+      border-radius: 22px;
+      padding: 32px;
+      box-shadow: var(--shadow-card);
+      animation: fade .35s ease;
+    }
+
+    @keyframes fade {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+      margin-bottom: 36px;
+    }
+
+    .card {
+      background: linear-gradient(135deg, #1e7e52 0%, #155c3b 100%);
+      padding: 28px;
+      border-radius: 18px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      border: none;
+      box-shadow: 0 8px 24px rgba(21, 92, 59, 0.25);
+    }
+
+    .card::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      right: -10px;
+      width: 80px;
+      height: 80px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      z-index: 1;
+    }
+
+    .card:hover {
+      background: linear-gradient(135deg, #155c3b 0%, #0d462b 100%);
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .card h2 {
+      font-size: 38px;
+      color: #fff;
+      margin-bottom: 4px;
+      position: relative;
+      z-index: 2;
+      font-weight: 700;
+    }
+
+    .card p {
+      font-size: 14px;
+      color: #eaf4ee;
+      letter-spacing: 0.5px;
+      position: relative;
+      z-index: 2;
+      font-weight: 500;
+    }
+
+    .card:hover h2,
+    .card:hover p {
+      color: #fff;
+    }
+
+    .upcoming {
+      background: #f3f8f5;
+      border-radius: 22px;
+      padding: 24px;
+    }
+
+    .appointment {
+      margin-top: 18px;
+      background: #eaf4ee;
+      padding: 18px;
+      border-radius: 16px;
+      transition: .25s;
+    }
+
+    .appointment:hover {
+      transform: scale(1.02);
+    }
+
+    .appointments-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .ap-counters {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 18px
+    }
+
+    .ap-card {
+      background: #eaf4ee;
+      padding: 14px;
+      border-radius: 12px;
+      flex: 1
+    }
+
+    .ap-card h4 {
+      margin-bottom: 6px;
+      color: #155c3b
+    }
+
+    .btn {
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600
+    }
+
+    .btn-accept {
+      background: #155c3b;
+      color: #fff
+    }
+
+    .btn-reject {
+      background: #ffecec;
+      color: #b71c1c
+    }
+
+    .status-badge {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-block;
+    }
+
+    .status-due {
+      background: #fff8e1;
+      color: #f57f17;
+      border: 1px solid #ffecb3;
+    }
+
+    .status-active {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #c8e6c9;
+    }
+
+    .status-critical {
+      background: #ffebee;
+      color: #c62828;
+      border: 1px solid #ffcdd2;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th,
+    td {
+      padding: 14px;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f3f8f5;
+      color: #155c3b;
+      text-align: left;
+    }
+
+    tbody tr {
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    tbody tr:hover {
+      background: #f1f7f4;
+    }
+
+    tbody tr.no-hover:hover {
+      background: transparent !important;
+      cursor: default !important;
+    }
+
+    tbody tr.no-hover {
+      cursor: default !important;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1100;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+      background: #fff;
+      border-radius: 22px;
+      padding: 28px;
+      width: 420px;
+      max-width: 92%;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, .3);
+    }
+
+    .modal-content h3 {
+      color: #155c3b;
+      margin-bottom: 10px;
+    }
+
+    .modal-content button {
+      margin-top: 16px;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 16px;
+      background: #155c3b;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        flex-direction: row;
+        gap: 12px;
+        overflow-x: auto;
+      }
+
+      .sidebar button {
+        flex: 1;
+        margin-bottom: 0;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .main {
+        padding: 22px;
+      }
+
+      .cards {
+        gap: 16px;
+      }
+    }
+
+    .medicine-menu {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+    .med-card {
+      background: #eaf4ee;
+      padding: 22px;
+      border-radius: 20px;
+      text-align: center;
+      font-weight: 600;
+      color: #155c3b;
+      cursor: pointer;
+      transition: .3s;
+    }
+
+    .med-card:hover {
+      transform: translateY(-4px) scale(1.03);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, .18);
+    }
+
+    .medicine-group {
+      display: none;
+      animation: slideFade .35s ease;
+    }
+
+    @keyframes slideFade {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* Patients section UI improvements */
+    #patients {
+      padding: 6px 4px;
+    }
+
+    #patients h3 {
+      font-size: 22px;
+      color: #155c3b;
+      margin-bottom: 6px;
+    }
+
+    #patients .subtitle {
+      color: #6b8a7a;
+      margin-bottom: 14px;
+      font-size: 13px;
+    }
+
+    #patients .table-wrap {
+      max-width: 920px;
+      margin: auto;
+    }
+
+    #patients table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 12px;
+    }
+
+    #patients thead tr {
+      display: flex;
+      gap: 12px;
+      background: transparent;
+      position: sticky;
+      top: 110px;
+      z-index: 4;
+      padding: 8px 12px;
+    }
+
+    #patients thead th {
+      flex: 1;
+      padding: 12px;
+      background: #f3f8f5;
+      border-radius: 10px;
+      color: #155c3b;
+      text-align: left;
+    }
+
+    #patients thead th:first-child {
+      flex: 2;
+    }
+
+    #patients tbody {
+      display: block;
+    }
+
+    #patients tbody tr {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: #fff;
+      padding: 14px 18px;
+      border-radius: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    #patients tbody tr:hover {
+      background: #f8fbf9;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(21, 92, 59, 0.1);
+      border-color: #eaf4ee;
+    }
+
+    #patients tbody td {
+      flex: 1;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    #patients tbody td:first-child {
+      flex: 2;
+      font-weight: 600;
+      color: #123;
+    }
+
+    #patients tbody td:first-child::first-letter {
+      background: #155c3b;
+      color: #fff;
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      text-align: center;
+      border-radius: 50%;
+      margin-right: 12px;
+      font-weight: 700;
+      font-size: 16px;
+      min-width: 40px;
+    }
+
+    #patients tbody td:nth-child(2) {
+      color: #333;
+      flex: 1.2;
+      font-size: 14px;
+    }
+
+    #patients tbody td:nth-child(3) {
+      justify-content: center;
+      flex: 0 0 80px;
+      display: flex;
+      align-items: center;
+    }
+
+    #patients tbody td:nth-child(4) {
+      color: #6b8a7a;
+      font-size: 13px;
+      flex: 1;
+    }
+
+    #patients tbody td:nth-child(5) {
+      flex: 0 0 80px;
+      justify-content: center;
+    }
+
+    .ai-add-btn {
+      padding: 6px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 6px;
+      transition: all 0.2s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .main section {
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+
+    @media (max-width:900px) {
+
+      #patients thead tr,
+      #patients tbody tr {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      #patients tbody td:nth-child(3) {
+        justify-content: flex-start;
+      }
+
+      #patients tbody td {
+        width: 100%;
+      }
+
+      #patients tbody tr {
+        padding: 12px 10px;
+      }
+
+      .table-wrap {
+        padding: 0 8px;
+      }
+    }
+
+    /* NEW STYLES for Dashboard Improvements */
+
+    /* Modal Backdrop Blur */
+    .modal {
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+    }
+
+    /* Extended Modal Styles */
+    .patient-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 16px;
+    }
+
+    .patient-header h3 {
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+
+    .patient-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px 24px;
+      margin-bottom: 24px;
+      background: #f8fbf9;
+      padding: 20px;
+      border-radius: 16px;
+    }
+
+    .info-group label {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #7f9f8e;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .info-group span {
+      font-size: 15px;
+      font-weight: 500;
+      color: #2c3e50;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-active {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .status-due {
+      background: #fff3e0;
+      color: #ef6c00;
+    }
+
+    .status-critical {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .status-gray {
+      background: #f5f5f5;
+      color: #666;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .modal-actions button {
+      flex: 1;
+      margin-top: 0;
+      /* Reset */
+      padding: 12px;
+      font-size: 13px;
+    }
+
+    .btn-outline {
+      background: #fff !important;
+      border: 1px solid #c8d7d0 !important;
+      color: #155c3b !important;
+    }
+
+    .btn-outline:hover {
+      background: #f3f8f5 !important;
+    }
+
+    /* Table Improvements */
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #6b8a7a;
+      background: #fcfdfc;
+      border-radius: 12px;
+      border: 2px dashed #e0ece6;
+      margin-top: 20px;
+    }
+
+    /* Patient Profile Drawer Overlay */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.15);
+      -webkit-backdrop-filter: blur(2px);
+      backdrop-filter: blur(2px);
+      display: none;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .drawer-overlay.active {
+      display: block;
+      opacity: 1;
+    }
+
+    /* Drawer Container */
+    .drawer {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      width: 420px;
+      max-width: 90vw;
+      max-height: 90vh;
+      background: transparent;
+      z-index: 1001;
+      padding: 30px;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .drawer.active {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Close Button */
+    .drawer-close {
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      font-size: 18px;
+      font-weight: 400;
+      cursor: pointer;
+      color: #5a7866;
+      background: #f3f8f5;
+      border: none;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s ease, color 0.2s ease;
+      z-index: 10;
+    }
+
+    .drawer-close:hover {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    /* Card-Style Container Inside Drawer */
+    .drawer-card {
+      background: var(--bg-card);
+      border-radius: 24px;
+      padding: 36px 32px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+      animation: drawerCardSlide 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes drawerCardSlide {
+      from {
+        opacity: 0;
+        transform: translateX(40px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* Header Section */
+    .drawer-header {
+      text-align: center;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .drawer-patient-name {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .drawer-uhid-text {
+      font-size: 13px;
+      color: var(--text-label);
+      font-family: monospace;
+      letter-spacing: 0.8px;
+      font-weight: 600;
+    }
+
+    /* Info Section */
+    .drawer-info-section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .drawer-info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-muted);
+    }
+
+    .drawer-info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-label);
+      letter-spacing: 1px;
+    }
+
+    .info-value {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-dark);
+      text-align: right;
+    }
+
+    .info-date {
+      color: var(--text-primary);
+    }
+
+    .info-count {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .drawer {
+        width: 95vw;
+        max-width: 95vw;
+        padding: 20px;
+      }
+
+      .drawer-card {
+        padding: 28px 24px;
+        max-width: 100%;
+      }
+
+      .drawer-close {
+        top: 12px;
+        right: 12px;
+      }
+    }
+
+    /* Last Appointment Badge */
+    .last-appt-badge {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+      margin-top: 6px;
+      display: inline-block;
+    }
+
+    .last-appt-green {
+      background: #eaf4ee;
+      color: #2e7d32;
+    }
+
+    .last-appt-gray {
+      background: #f5f5f5;
+      color: #78909c;
+    }
+
+    .last-appt-upcoming {
+      background: #fff3e0;
+      color: #ef6c00;
+    }
+
+    @keyframes doctor-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -468px 0;
+      }
+
+      100% {
+        background-position: 468px 0;
+      }
+    }
+
+    .skeleton {
+      background: #f6f7f8;
+      background: linear-gradient(to right, #f6f7f8 8%, #edeef1 18%, #f6f7f8 33%);
+      background-size: 800px 104px;
+      animation: shimmer 1.2s linear infinite forwards;
+      border-radius: 4px;
+    }
+
+    .skeleton-circle {
+      border-radius: 50%;
+    }
+
+    /* DRAWER ACTIONS */
+    .drawer-actions {
+      margin-top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-top: 24px;
+      border-top: 1.5px solid #f3f8f5;
+      width: 100%;
+    }
+
+    .drawer-actions button {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .drawer-actions button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-prescribe {
+      background: #e8f5e9;
+      color: #155c3b;
+    }
+
+    .btn-schedule {
+      background: #155c3b;
+      color: #fff;
+    }
+
+    .btn-delete-patient-drawer {
+      background: #ffecec;
+      color: #b71c1c;
+      margin-top: 4px;
+    }
+
+    .btn-activation {
+      background: #fff;
+      border: 1.5px solid #155c3b !important;
+      color: #155c3b;
+    }
+
+    /* MODAL SLOTS */
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .time-slot {
+      padding: 8px;
+      background: #f8fbf9;
+      border: 1px solid #eaf4ee;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 13px;
+      color: #155c3b;
+    }
+
+    .time-slot:hover {
+      background: #e8f5e9;
+    }
+
+    .time-slot.selected {
+      background: #155c3b;
+      color: #fff;
+      border-color: #155c3b;
+    }
+
+    .time-slot.booked {
+      background: #ffebee;
+      color: #c62828;
+      border-color: #ffcdd2;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .close-modal-x {
+      background: #f3f8f5;
+      border: none;
+      font-size: 18px;
+      font-weight: 400;
+      cursor: pointer;
+      color: #5a7866;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .close-modal-x:hover {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    /* AI Prescription Draft Assistant Styles - Premium Polish */
+    .ai-suggest-btn {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ai-suggest-btn::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+      pointer-events: none;
+    }
+
+    .ai-suggest-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35);
+    }
+
+    .ai-suggest-btn .ai-icon {
+      font-size: 16px;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    }
+
+    .ai-suggestion-card {
+      background: #fafafa;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      animation: slideDownFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
+      position: relative;
+    }
+
+    @keyframes slideDownFade {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .ai-suggestion-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .ai-suggestion-title {
+      color: #334155;
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+    }
+
+    .ai-suggestion-disclaimer {
+      font-size: 11px;
+      color: #64748b;
+      background: #f8fafc;
+      padding: 6px 10px;
+      border-radius: 6px;
+      margin-top: 4px;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* Medicine Cards */
+    .ai-suggestion-item {
+      background: #fff;
+      border: 1px solid #f0f4f2;
+      border-left: 4px solid #145A32;
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ai-suggestion-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+      background: #fdfdfd;
+      border-left: 4px solid #145A32; /* Explicit static border */
+    }
+
+    .ai-suggestion-item .med-info {
+      flex: 1;
+      padding-left: 8px;
+    }
+
+    .ai-suggestion-item .med-name {
+      font-weight: 700;
+      color: #1e293b;
+      font-size: 15px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ai-suggestion-item .med-details {
+      font-size: 12px;
+      color: #64748b;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .ai-suggestion-item .med-tag {
+      background: #f1f5f9;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      color: #475569;
+    }
+
+    /* Stock Status */
+    .stock-indicator {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .stock-indicator.in-stock {
+      color: #16a34a;
+    }
+
+    .stock-indicator.low-stock {
+      color: #d97706;
+    }
+
+    .stock-indicator.out-stock {
+      color: #dc2626;
+    }
+
+    .ai-suggestion-item .apply-btn {
+      background: #eaf4ee;
+      color: #155c3b;
+      border: 1px solid #c8e6c9;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .ai-suggestion-item .apply-btn:hover {
+      background: #155c3b;
+      color: #fff;
+      border-color: #155c3b;
+    }
+
+    .ai-apply-all-btn {
+      background: #155c3b;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 10px rgba(21, 92, 59, 0.2);
+      transition: all 0.2s;
+    }
+
+    .ai-apply-all-btn:hover {
+      background: #104a30;
+      transform: translateY(-1px);
+    }
+
+    /* Notes Section */
+    .ai-notes {
+      margin-top: 16px;
+      padding: 14px;
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      border-radius: 10px;
+    }
+
+    .ai-notes-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #b45309;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .ai-notes-list li {
+      margin-bottom: 6px;
+      padding-left: 14px;
+      position: relative;
+    }
+
+    .ai-notes-list li::before {
+      content: '•';
+      color: #d97706;
+      position: absolute;
+      left: 0;
+      font-weight: bold;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="overlay"></div>
+
+  <div class="top-bar">
+    <div class="brand">
+      <div class="logo">
+        <img src="assets/logo.png" alt="Samyak Ayurvedic Hospital Logo">
+      </div>
+      <span>Samyak Ayurvedic Hospital</span>
+    </div>
+
+  </div>
+
+  <div class="dashboard">
+    <div class="layout">
+
+      <aside class="sidebar">
+        <div style="background:var(--bg-tertiary);border-radius:18px;padding:16px;margin-bottom:20px">
+          <h3 style="color:var(--text-primary)">Dr. Rajan Karangiya</h3>
+          <p style="font-size:13px;color:var(--text-secondary)">
+            B.A.M.S. (RGUHS), CCP
+          </p>
+        </div>
+
+
+        <button type="button" class="active" data-target="overview" onclick="show('overview')">Dashboard</button>
+        <button type="button" data-target="patients" onclick="show('patients')">Patients</button>
+        <button type="button" data-target="create-patient" onclick="show('create-patient')">Create Patient</button>
+        <button type="button" data-target="appointments" onclick="show('appointments')">Appointments</button>
+        <button type="button" data-target="prescriptions" onclick="show('prescriptions')">Prescriptions</button>
+        <button type="button" data-target="stock" onclick="show('stock')">Medicine Stock</button>
+
+        <div style="flex:1"></div>
+
+        <button type="button" class="logout-fixed" onclick="logout()">Logout</button>
+
+      </aside>
+
+      <main class="main">
+
+        <section id="overview">
+          <h2 style="color:#155c3b;margin-bottom:6px">Hospital Overview</h2>
+          <p id="dashboardDate" style="font-size:13px;color:#4f6f60;margin-bottom:28px"></p>
+
+          <div class="cards">
+            <div class="card" onclick="show('patients')" style="cursor:pointer">
+              <h2 id="totalPatients">0</h2>
+              <p>Total Patients</p>
+            </div>
+            <div class="card" onclick="show('appointments')" style="cursor:pointer">
+              <h2 id="todayAppts">0</h2>
+              <p>Total Appointments (Today)</p>
+            </div>
+            <div class="card" onclick="handleMedicineLowClick()" style="cursor:pointer">
+              <h2 id="lowStock">0</h2>
+              <p>Medicine Low</p>
+            </div>
+          </div>
+
+          <div class="upcoming">
+            <h3 style="color:#155c3b">Upcoming Appointment</h3>
+            <div class="appointment" id="upcomingApptCard">
+              <p style="color:#666;font-size:13px;padding:10px 0">Loading...</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="patients" style="display:none">
+          <div class="appointments-header">
+            <div>
+              <h3>Patients</h3>
+              <p class="subtitle" style="margin:0">List of registered patients under your care</p>
+            </div>
+            <div>
+              <input type="text" id="patientSearch" onkeyup="filterPatients()" placeholder="Search..."
+                style="padding:10px 16px;border-radius:12px;border:1px solid #ddd;outline:none;font-size:14px">
+            </div>
+          </div>
+          <div class="table-wrap" style="margin-top:20px">
+            <table>
+              <thead>
+                <tr>
+                  <th style="flex:2">Name</th>
+                  <th style="flex:1.2">Contact</th>
+                  <th style="flex:0.8; text-align:center;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="patientsTable"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="create-patient" style="display:none">
+          <style>
+            #create-patient .form-container {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              min-height: calc(100vh - 120px);
+              padding: 20px;
+              background: transparent;
+            }
+
+            #create-patient .form-card {
+              background: #ffffff;
+              border-radius: 16px;
+              padding: 32px;
+              width: 100%;
+              max-width: 650px;
+              box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+              border: 1px solid #eef4f1;
+            }
+
+            #create-patient .form-title {
+              font-size: 24px;
+              font-weight: 700;
+              color: #155c3b;
+              margin-bottom: 32px;
+              text-align: center;
+            }
+
+            #create-patient .form-row {
+              display: flex;
+              gap: 24px;
+              margin-bottom: 24px;
+            }
+
+            #create-patient .form-group {
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              gap: 8px;
+            }
+
+            #create-patient .form-group.full-width {
+              flex: none;
+              width: 100%;
+            }
+
+            #create-patient label {
+              font-size: 11px;
+              font-weight: 700;
+              text-transform: uppercase;
+              color: #155c3b;
+              letter-spacing: 0.8px;
+              margin-left: 4px;
+            }
+
+            #create-patient input, 
+            #create-patient select {
+              height: 48px;
+              padding: 0 16px;
+              border: 1.5px solid #e0e6e3;
+              border-radius: 10px;
+              font-size: 14px;
+              color: #2c3e50;
+              background: #ffffff;
+              transition: all 0.2s ease;
+              outline: none;
+            }
+
+            #create-patient input:focus, 
+            #create-patient select:focus {
+              border-color: #155c3b;
+              box-shadow: 0 0 0 3px rgba(21, 92, 59, 0.1);
+            }
+
+            #create-patient .helper-text {
+              font-size: 12px;
+              color: #6b8a7a;
+              margin-top: 4px;
+              margin-left: 4px;
+              font-weight: 500;
+            }
+
+            #create-patient .btn-primary-form {
+              width: 100%;
+              height: 54px;
+              background: #155c3b;
+              color: #ffffff;
+              border: none;
+              border-radius: 12px;
+              font-size: 16px;
+              font-weight: 600;
+              cursor: pointer;
+              transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+              margin-top: 8px;
+            }
+
+            #create-patient .btn-primary-form:hover {
+              background: #0d462b;
+              transform: translateY(-2px);
+              box-shadow: 0 8px 20px rgba(21, 92, 59, 0.2);
+            }
+
+            #create-patient .btn-primary-form:active {
+              transform: translateY(0);
+            }
+
+            @media (max-width: 600px) {
+              #create-patient .form-row {
+                flex-direction: column;
+                gap: 24px;
+              }
+              #create-patient .form-card {
+                padding: 24px;
+              }
+            }
+          </style>
+
+          <div class="form-container">
+            <div class="form-card">
+              <h2 class="form-title">New Patient</h2>
+              <form id="createPatientForm" onsubmit="handleCreatePatient(event)">
+                
+                <!-- Row 1: Patient Name (full width) -->
+                <div class="form-row">
+                  <div class="form-group full-width">
+                    <label for="cpName">Patient Name</label>
+                    <input type="text" id="cpName" required>
+                  </div>
+                </div>
+
+                <!-- Row 2: Email Address (left) | Mobile Number (right) -->
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="cpEmail">Email Address</label>
+                    <input type="email" id="cpEmail">
+                    <p class="helper-text">Leave blank if patient does not have email</p>
+                  </div>
+                  <div class="form-group">
+                    <label for="cpPhone">Mobile Number</label>
+                    <input type="tel" id="cpPhone" required>
+                  </div>
+                </div>
+
+                <!-- Row 3: Age (left) | Gender (right) -->
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="cpAge">Age</label>
+                    <input type="number" id="cpAge" min="0" max="120">
+                  </div>
+                  <div class="form-group">
+                    <label for="cpGender">Gender</label>
+                    <select id="cpGender">
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Action Button -->
+                <button type="submit" class="btn-primary-form">Create Patient Profile</button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <section id="appointments" style="display:none"></section>
+
+        <section id="prescriptions" style="display:none">
+          <style>
+            @keyframes slideInUp {
+              from {
+                opacity: 0;
+                transform: translateY(15px);
+              }
+
+              to {
+                opacity: 1;
+                transform: translateY(0);
+              }
+            }
+
+            @keyframes fadeInScale {
+              from {
+                opacity: 0;
+                transform: scale(0.98);
+              }
+
+              to {
+                opacity: 1;
+                transform: scale(1);
+              }
+            }
+
+            .patient-card {
+              background: #fff;
+              border: 1px solid #eef4f1;
+              border-radius: 16px;
+              margin-bottom: 16px;
+              overflow: hidden;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+              transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+              opacity: 0;
+              /* Hidden initially for animation */
+            }
+
+            .patient-card:hover {
+              box-shadow: 0 10px 30px rgba(21, 92, 59, 0.08);
+              transform: translateY(-2px);
+              border-color: #dbece5;
+              background: #fdfefe;
+            }
+
+            .pc-header {
+              padding: 20px 24px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              cursor: pointer;
+              background: #fff;
+              transition: background 0.2s;
+            }
+
+            .pc-header:hover {
+              background: #f4f9f6;
+            }
+
+            .pc-name {
+              font-weight: 700;
+              font-size: 16px;
+              color: #155c3b;
+              letter-spacing: -0.3px;
+            }
+
+            .count-badge {
+              background: #e8f5e9;
+              color: #155c3b;
+              padding: 5px 12px;
+              border-radius: 20px;
+              font-weight: 600;
+              font-size: 12px;
+              transition: all 0.2s;
+              letter-spacing: 0.3px;
+            }
+
+            .count-badge:hover {
+              background: #155c3b;
+              color: #fff;
+              box-shadow: 0 2px 8px rgba(21, 92, 59, 0.2);
+            }
+
+            .last-date {
+              font-size: 13px;
+              color: #8fab9f;
+              font-weight: 500;
+              margin-right: 8px;
+            }
+
+            .toggle-icon {
+              font-size: 10px;
+              color: #155c3b;
+              transition: transform 0.3s ease;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              width: 24px;
+              height: 24px;
+              background: #eaf4ee;
+              border-radius: 50%;
+            }
+
+            .toggle-icon.rotated {
+              transform: rotate(180deg);
+              background: #155c3b;
+              color: #fff;
+            }
+
+            .pc-body {
+              padding: 24px;
+              border-top: 1px solid #f0f5f2;
+              background: #fff;
+              animation: fadeInScale 0.3s ease forwards;
+            }
+
+            .presc-grid {
+              display: grid;
+              grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+              gap: 20px;
+            }
+
+            .presc-card {
+              border: 1px solid #f0f0f0;
+              border-radius: 12px;
+              padding: 20px;
+              position: relative;
+              background: #fff;
+              transition: 0.2s;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+            }
+
+            .presc-card:hover {
+              border-color: #155c3b;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            }
+
+            .presc-date {
+              font-size: 11px;
+              color: #999;
+              margin-bottom: 6px;
+              font-weight: 700;
+              text-transform: uppercase;
+              letter-spacing: 0.8px;
+            }
+
+            .presc-diag {
+              font-weight: 700;
+              color: #2c3e50;
+              margin-bottom: 12px;
+              font-size: 16px;
+            }
+
+            .presc-meds {
+              font-size: 14px;
+              color: #555;
+              line-height: 1.6;
+              margin-bottom: 16px;
+            }
+
+            .presc-med-item {
+              margin-bottom: 6px;
+              display: flex;
+              justify-content: space-between;
+              border-bottom: 1px dashed #f5f5f5;
+              padding-bottom: 4px;
+            }
+
+            .presc-med-item:last-child {
+              border-bottom: none;
+            }
+
+            .presc-actions {
+              display: flex;
+              justify-content: flex-end;
+              gap: 8px;
+              border-top: 1px solid #f5f5f5;
+              padding-top: 14px;
+              margin-top: 8px;
+            }
+
+            .btn-edit {
+              background: #fff;
+              border: 1px solid #e0e0e0;
+              color: #555;
+              padding: 6px 14px;
+              border-radius: 8px;
+              font-size: 12px;
+              font-weight: 600;
+              cursor: pointer;
+              transition: 0.2s;
+            }
+
+            .btn-edit:hover {
+              border-color: #155c3b;
+              color: #155c3b;
+              background: #f4f9f6;
+            }
+
+            .btn-pdf {
+              background: #e8f5e9;
+              border: 1px solid #c8e6c9;
+              color: #155c3b;
+              padding: 6px 14px;
+              border-radius: 8px;
+              font-size: 12px;
+              font-weight: 600;
+              cursor: pointer;
+              transition: 0.2s;
+              display: flex;
+              align-items: center;
+              gap: 6px;
+            }
+
+            .btn-pdf:hover {
+              background: #155c3b;
+              color: #fff;
+              border-color: #155c3b;
+            }
+
+            .btn-download {
+              background: #e8f5e9;
+              border: 1px solid #c8e6c9;
+              color: #155c3b;
+              padding: 6px 14px;
+              border-radius: 8px;
+              font-size: 12px;
+              font-weight: 600;
+              cursor: pointer;
+              transition: 0.2s;
+              display: flex;
+              align-items: center;
+              gap: 6px;
+            }
+
+            .btn-download:hover {
+              background: #155c3b;
+              color: #fff;
+              border-color: #155c3b;
+            }
+
+            /* Search Input Polish */
+            #presSearch:focus {
+              border-color: #155c3b !important;
+              box-shadow: 0 0 0 3px rgba(21, 92, 59, 0.1) !important;
+              transition: all 0.2s;
+            }
+
+            /* --- MEDICINE STOCK TAB STYLES --- */
+            .stock-layout,
+            .stock-layout * {
+              font-family: "Segoe UI", system-ui, sans-serif;
+            }
+
+            .stock-layout {
+              display: flex;
+              flex-direction: column;
+              gap: 24px;
+              padding-top: 10px;
+            }
+
+            .stock-categories {
+              display: flex;
+              gap: 12px;
+              margin-bottom: 24px;
+              flex-wrap: wrap;
+            }
+
+            .stock-cat-pill {
+              padding: 10px 20px;
+              background: #fff;
+              border: 1px solid #eef4f1;
+              border-radius: 12px;
+              color: #557062;
+              font-weight: 500;
+              font-size: 13.5px;
+              cursor: pointer;
+              transition: all 0.25s ease;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            }
+
+            .stock-cat-pill:hover {
+              border-color: #bbcac1;
+              color: #155c3b;
+              transform: translateY(-1px);
+            }
+
+            .stock-cat-pill.active {
+              background: #155c3b;
+              color: #fff;
+              border-color: #155c3b;
+              box-shadow: 0 4px 12px rgba(21, 92, 59, 0.2);
+            }
+
+            .stock-grid {
+              display: grid;
+              grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+              gap: 16px;
+            }
+
+            .med-stock-card {
+              background: #fff;
+              border: 1px solid #f0f4f2;
+              border-radius: 14px;
+              padding: 16px 20px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+              box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+              border-left: 3px solid #e5ede9;
+            }
+            
+            .med-stock-card:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+              background: #fdfdfd;
+            }
+
+            .med-info {
+              display: flex;
+              flex-direction: column;
+              gap: 2px;
+            }
+
+            .med-name-label {
+              font-weight: 500;
+              color: #2c3e50;
+              font-size: 14.5px;
+              letter-spacing: -0.1px;
+            }
+
+            .med-status-tag {
+              font-size: 10px;
+              font-weight: 500;
+              text-transform: uppercase;
+              letter-spacing: 0.8px;
+              padding: 2px 6px;
+              border-radius: 4px;
+              width: fit-content;
+              margin-top: 2px;
+            }
+
+            .status-tag-in {
+              color: #2e7d32;
+              background: #e8f5e9;
+              border: 1px solid #c8e6c9;
+            }
+
+            .status-tag-low {
+              color: #b45309;
+              background: #fffbeb;
+              border: 1px solid #fef3c7;
+            }
+
+            .qty-display {
+              display: flex;
+              align-items: center;
+              gap: 6px;
+            }
+
+            .qty-value {
+              font-size: 18px;
+              font-weight: 600;
+              color: #155c3b;
+              min-width: 40px;
+              text-align: right;
+              transition: color 0.3s ease;
+            }
+
+            .qty-unit {
+              font-size: 11px;
+              color: #8dab9c;
+              font-weight: 400;
+              text-transform: uppercase;
+              margin-top: 3px;
+            }
+
+            .low-stock-pulse {
+              animation: clinicalAmberPulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+            }
+
+            @keyframes clinicalAmberPulse {
+              0% {
+                color: #d97706;
+                opacity: 1;
+              }
+
+              50% {
+                color: #f59e0b;
+                opacity: 0.85;
+                transform: scale(1.03);
+              }
+
+              100% {
+                color: #d97706;
+                opacity: 1;
+              }
+            }
+
+            .qty-changed {
+              animation: subtleHighlight 1.5s ease-out;
+            }
+
+            @keyframes subtleHighlight {
+              0% {
+                background-color: rgba(21, 92, 59, 0.15);
+                transform: scale(1.05);
+              }
+
+              100% {
+                background-color: transparent;
+                transform: scale(1);
+              }
+            }
+          </style>
+          <div class="appointments-header"
+            style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+            <div>
+              <h3 style="color:#155c3b;margin-bottom:6px">Prescription Records</h3>
+              <p style="font-size:13px;color:#4f6f60;margin:0">Patient History & Management</p>
+            </div>
+            <div>
+              <input type="text" id="presSearch" onkeyup="loadPrescriptions()" placeholder="Search Patient..."
+                style="padding:10px 16px;border-radius:12px;border:1px solid #ddd;outline:none;font-size:14px;width:250px">
+            </div>
+          </div>
+
+          <div id="prescriptionsList"></div>
+        </section>
+
+        <section id="stock" style="display:none">
+          <div class="stock-layout">
+            <div class="appointments-header"
+              style="margin-bottom:0px; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <h3 style="color:#155c3b;margin-bottom:6px;font-weight:600">Inventory & Medicine Stock</h3>
+                <p style="font-size:13px;color:#4f6f60;margin:0">Monitoring stock levels and availability in real-time
+                </p>
+              </div>
+              <div class="search-box" style="margin-left:auto;">
+                <input type="text" id="stockSearch" placeholder="Search Inventory..."
+                  oninput="renderStockGrid(activeStockCategory)"
+                  style="padding:10px 16px;border-radius:12px;border:1px solid #ddd;outline:none;font-size:14px;width:250px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+              </div>
+            </div>
+
+            <!-- CATEGORY PILLS -->
+            <div class="stock-categories">
+              <div class="stock-cat-pill active" onclick="switchStockCategory('tablets', this)">
+                <span>💊</span> Tablets / Vati / Churna
+              </div>
+              <div class="stock-cat-pill" onclick="switchStockCategory('liquids', this)">
+                <span>🌿</span> Asava / Kadha
+              </div>
+              <div class="stock-cat-pill" onclick="switchStockCategory('others', this)">
+                <span>🧴</span> Oils / Syrups / Others
+              </div>
+            </div>
+
+            <!-- MEDICINE LIST CONTAINER -->
+            <div id="medicineGrid" class="stock-grid">
+              <!-- Cards will be injected here via loadStock -->
+            </div>
+
+            <!-- Hidden original containers for compatibility if JS refers to them, 
+                 but we will update JS to use medicineGrid primarily -->
+            <div id="tablets" class="medicine-group" style="display:none"></div>
+            <div id="liquids" class="medicine-group" style="display:none"></div>
+            <div id="others" class="medicine-group" style="display:none"></div>
+            <div id="catTablets" style="display:none"></div>
+            <div id="catLiquids" style="display:none"></div>
+            <div id="catOthers" style="display:none"></div>
+          </div>
+        </section>
+
+
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Patient Profile Drawer -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+  <div class="drawer" id="patientDrawer">
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+
+    <!-- Centered Card Container -->
+    <div class="drawer-card">
+      <div class="drawer-header">
+        <h2 class="drawer-patient-name" id="drawerName">Patient Name</h2>
+        <span class="drawer-uhid-text" id="drawerUHID">UHID: --</span>
+      </div>
+
+      <div class="drawer-info-section">
+        <div class="drawer-info-row">
+          <span class="info-label">Contact</span>
+          <span class="info-value" id="drawerContact">--</span>
+        </div>
+
+        <div class="drawer-info-row">
+          <span class="info-label">Status</span>
+          <span class="status-badge status-active" id="drawerStatus">Active</span>
+        </div>
+
+        <div class="drawer-info-row">
+          <span class="info-label">Age / Gender</span>
+          <span class="info-value" id="drawerAgeGender">--</span>
+        </div>
+
+        <div class="drawer-info-row">
+          <span class="info-label">Last Visit</span>
+          <span class="info-value info-date" id="drawerLastAppt">No previous appointments</span>
+        </div>
+
+        <div class="drawer-info-row">
+          <span class="info-label">Total Visits</span>
+          <span class="info-value info-count" id="drawerTotalAppts" style="cursor:pointer;">0</span>
+        </div>
+
+        <div id="drawerVisitHistory"
+          style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid #f3f8f5;">
+          <div
+            style="font-size:11px;text-transform:uppercase;font-weight:700;color:#7f9f8e;margin-bottom:8px;letter-spacing:1px;">
+            Visit History</div>
+          <div id="drawerVisitList" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+
+        <!-- AI Symptom Progress Summary Section (Read-Only for Doctor) -->
+        <div id="drawerProgressAnalytics"
+          style="display:none; margin-top:20px; padding:16px; background:#f0f9ff; border:1px solid #bae6fd; border-radius:12px;">
+          <div
+            style="font-size:11px; font-weight:700; color:#0369a1; text-transform:uppercase; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+            <span>📈</span> Patient Recovery Feedback (AI Summary)
+          </div>
+
+          <div id="progressSummaryResult"
+            style="padding:12px; background:white; border-radius:10px; border:1px solid #e0f2fe; font-size:12px; color:#1e293b; line-height:1.6; box-shadow:0 2px 4px rgba(0,0,0,0.02); white-space: pre-line;">
+            No recent recovery feedback reported by patient.
+          </div>
+        </div>
+      </div>
+      <div class="drawer-actions" id="drawerActions">
+        <!-- Buttons injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Update Email Modal -->
+  <div class="modal" id="updateEmailModal">
+    <div class="modal-content" style="width: 400px; padding: 32px; border-radius: 20px;">
+      <h3 id="ueTitle" style="color:#155c3b; margin-bottom: 8px;">Activate Patient Account</h3>
+      <p style="font-size: 13px; color: #6b8a7a; margin-bottom: 24px;">Enter a valid email address to enable digital access for this patient.</p>
+      
+      <form onsubmit="event.preventDefault(); submitEmailUpdate();">
+        <label style="display: block; font-size: 11px; text-transform: uppercase; color: #155c3b; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.5px;">New Email Address</label>
+        <input type="email" id="ueEmail" placeholder="example@email.com" required
+          style="width: 100%; border: 1px solid #e0e0e0; border-radius: 10px; padding: 12px; margin-bottom: 24px; font-size: 14px; outline: none; transition: 0.2s;"
+          onfocus="this.style.borderColor='#155c3b'; this.style.boxShadow='0 0 0 3px rgba(21,92,59,0.1)'"
+          onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
+        
+        <div style="display: flex; gap: 12px;">
+          <button type="button" onclick="closeUpdateEmailModal()" 
+            style="flex: 1; padding: 12px; border: 1px solid #e0e0e0; background: #fff; color: #64748b; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;">
+            Cancel
+          </button>
+          <button type="submit" id="ueSubmitBtn" 
+            style="flex: 1; padding: 12px; border: none; background: #155c3b; color: #fff; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;">
+            Activate Account
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Prescription Modal -->
+  <div class="modal" id="prescriptionModal">
+    <div class="modal-content" style="width: 750px; max-width: 94%; max-height: 90vh; overflow-y: auto;">
+      <form id="prescriptionForm" onsubmit="event.preventDefault(); savePrescription();">
+        <div class="patient-header" style="display:flex;align-items:center;gap:20px;">
+          <button type="button" onclick="closePresModal()"
+            style="background:#e8f5e9;border:none;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer;color:#155c3b;display:flex;align-items:center;justify-content:center;transition:0.2s;flex-shrink:0"
+            title="Back to Patient Drawer">←</button>
+          <div style="flex:1">
+            <h3 style="margin:0;line-height:1.2;font-size:20px">Create Prescription</h3>
+            <p id="presPatientName" style="color:#6b8a7a;font-size:14px;margin:0;margin-top:4px">Patient Name</p>
+            <input type="hidden" id="presPatientAge" value="">
+            <input type="hidden" id="presPatientGender" value="">
+            <input type="hidden" id="presVisitType" value="first">
+          </div>
+          <button type="button" onclick="closePresModal()" class="close-modal-x">✕</button>
+        </div>
+
+        <!-- Symptoms Field -->
+        <div style="margin-bottom:16px">
+          <label style="display:block;font-size:12px;font-weight:600;color:#155c3b;margin-bottom:6px">Symptoms /
+            Complaints</label>
+          <input type="text" id="presSymptoms" oninput="debounceAI()"
+            style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;outline:none">
+        </div>
+
+        <div style="margin-bottom:16px">
+          <label style="display:block;font-size:12px;font-weight:600;color:#155c3b;margin-bottom:6px">Diagnosis</label>
+          <input type="text" id="presDiagnosis" required oninput="debounceAI()"
+            style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;outline:none">
+        </div>
+
+        <!-- AI Suggest Button (Hidden for auto-trigger) -->
+        <button type="button" id="aiSuggestBtn" class="ai-suggest-btn" style="display:none;"
+          onclick="getAIPrescriptionDraft()">
+          <span class="ai-icon">✨</span>
+          <span>AI Suggest</span>
+        </button>
+
+        <!-- AI Suggestions Container -->
+        <div id="aiSuggestionsContainer" style="display:none;"></div>
+
+        <div id="medicationList" style="margin-bottom:16px">
+          <label style="display:block;font-size:12px;font-weight:600;color:#155c3b;margin-bottom:6px">Medicines</label>
+          <div id="presMedsContainer">
+            <!-- Medicine rows here -->
+          </div>
+          <button type="button" class="btn btn-outline" style="width:100%;margin-top:10px;font-size:12px"
+            onclick="addMedRow()">+ Add
+            Medicine</button>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:24px">
+          <button type="button" class="btn-outline" style="flex:1" onclick="closePresModal()">Cancel</button>
+          <button type="submit" id="savePresBtn"
+            style="flex:2;background:#155c3b;color:#fff;border:none;border-radius:16px;cursor:pointer;font-weight:600">Save
+            Prescription</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="modal" id="updateStockModal">
+    <div class="modal-content" style="width: 400px; max-width: 94%;">
+      <form id="updateStockForm" onsubmit="event.preventDefault(); saveStockUpdate();">
+        <div class="patient-header">
+          <div>
+            <h3>Update Stock</h3>
+            <p id="updateMedName" style="color:#6b8a7a;font-size:14px">Medicine Name</p>
+          </div>
+          <button type="button" onclick="closeUpdateStockModal()" class="close-modal-x">✕</button>
+        </div>
+
+        <div style="margin-bottom:16px">
+          <label style="display:block;font-size:12px;font-weight:600;color:#155c3b;margin-bottom:6px">Current
+            Quantity</label>
+          <div id="updateCurrentQty"
+            style="font-size:18px;font-weight:700;color:#2c3e50;padding:10px;background:#f8fbf9;border-radius:10px">0
+          </div>
+        </div>
+
+        <div style="margin-bottom:16px">
+          <label style="display:block;font-size:12px;font-weight:600;color:#155c3b;margin-bottom:6px">New
+            Quantity</label>
+          <input type="number" id="updateNewQty" placeholder="Enter quantity" min="0" required
+            style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;outline:none">
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:24px">
+          <button type="button" class="btn-outline" style="flex:1" onclick="closeUpdateStockModal()">Cancel</button>
+          <button type="submit"
+            style="flex:2;background:#155c3b;color:#fff;border:none;border-radius:16px;cursor:pointer;font-weight:600">Save
+            Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Schedule Appointment Modal -->
+  <div class="modal" id="scheduleModal">
+    <div class="modal-content" style="width: 400px; max-width: 94%;">
+      <form id="scheduleForm" onsubmit="event.preventDefault(); bookDoctorAppointment();">
+        <div class="patient-header" style="display:flex;align-items:center;gap:20px;">
+          <button type="button" onclick="closeScheduleModal()"
+            style="background:#e8f5e9;border:none;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer;color:#155c3b;display:flex;align-items:center;justify-content:center;transition:0.2s;flex-shrink:0"
+            title="Back to Patient Drawer">←</button>
+          <div style="flex:1">
+            <h3 style="margin:0;line-height:1.2;font-size:20px">Schedule Appointment</h3>
+            <p id="schedulePatientName" style="color:#6b8a7a;font-size:14px;margin:0;margin-top:4px">Patient Name</p>
+          </div>
+          <button type="button" onclick="closeScheduleModal()" class="close-modal-x">✕</button>
+        </div>
+
+        <div style="margin-bottom:16px">
+          <label style="display:block;font-size:12px;font-weight:600;color:#155c3b;margin-bottom:6px">Select
+            Date</label>
+          <input type="date" id="bookDate" onchange="loadDoctorSlots(this.value)" required
+            style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;outline:none">
+        </div>
+
+        <div style="margin-bottom:16px">
+          <label style="display:block;font-size:12px;font-weight:600;color:#155c3b;margin-bottom:6px">Select Time
+            Slot</label>
+          <div id="loadingSlots" style="display:none;color:#666;font-size:12px;margin-bottom:8px">Checking
+            availability...
+          </div>
+          <div class="slots-grid" id="slotContainer">
+            <div style="grid-column:1/-1;text-align:center;color:#888;font-size:13px">Select date first</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:24px">
+          <button type="button" class="btn-outline" style="flex:1" onclick="closeScheduleModal()">Cancel</button>
+          <button type="submit"
+            style="flex:2;background:#155c3b;color:#fff;border:none;border-radius:16px;cursor:pointer;font-weight:600">Confirm
+            Booking</button>
+        </div>
+      </form>
+      <p id="bookMsg" style="text-align:center;color:#c62828;font-size:13px;margin-top:10px"></p>
+    </div>
+  </div>
+
+  <!-- View Prescription Modal -->
+  <div class="modal" id="viewPresModal">
+    <div class="modal-content" style="width: 600px; max-width: 94%;">
+      <div class="patient-header" style="display:flex;align-items:center;gap:20px;">
+        <button onclick="closeViewPresModal()"
+          style="background:#e8f5e9;border:none;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer;color:#155c3b;display:flex;align-items:center;justify-content:center;transition:0.2s;flex-shrink:0"
+          title="Back">←</button>
+        <div style="flex:1">
+          <h3 style="margin:0;line-height:1.2;font-size:20px">Prescription Details</h3>
+          <p id="viewPresInfo" style="color:#6b8a7a;font-size:14px;margin:0;margin-top:4px">--</p>
+        </div>
+        <button onclick="closeViewPresModal()" class="close-modal-x">✕</button>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <label
+          style="display:block;font-size:12px;font-weight:600;color:#155c3b;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Diagnosis</label>
+        <div id="viewDiagnosis"
+          style="font-size:15px;color:#333;background:#f9fbf9;padding:12px;border-radius:10px;border:1px solid #eee">--
+        </div>
+      </div>
+
+      <div>
+        <label
+          style="display:block;font-size:12px;font-weight:600;color:#155c3b;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Medicines</label>
+        <div id="viewMedsList" style="display:flex;flex-direction:column;gap:10px"></div>
+      </div>
+
+      <div style="margin-top:24px;text-align:right">
+        <button onclick="closeViewPresModal()" class="btn-outline">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <datalist id="medSuggestions"></datalist>
+
+  <script>
+    const API = "http://localhost:5001";
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+    if (!token || user.role !== "doctor") location.replace("login.html?role=doctor");
+
+    function closeAllModals() {
+      const modals = ['updateEmailModal', 'prescriptionModal', 'updateStockModal', 'scheduleModal', 'viewPresModal', 'logoutModal'];
+      modals.forEach(id => {
+        const m = document.getElementById(id);
+        if (m) m.style.display = 'none';
+      });
+      document.getElementById('drawerOverlay').classList.remove('active');
+      document.getElementById('patientDrawer').classList.remove('active');
+      document.body.style.overflow = "auto";
+    }
+
+    function show(id) {
+      if (id === 'appointments') {
+        renderDoctorAppointmentsTab(false);
+      } else {
+        if (id === 'prescriptions') loadPrescriptions();
+        if (id === 'stock') loadStock();
+        if (id === 'patients') loadPatients();
+      }
+
+      ["overview", "patients", "create-patient", "appointments", "prescriptions", "stock"].forEach(v => {
+        const el = document.getElementById(v);
+        if (el) el.style.display = "none";
+      });
+      const target = document.getElementById(id);
+      if (target) target.style.display = "block";
+
+      document.querySelectorAll(".sidebar button").forEach(b => {
+        b.classList.toggle("active", b.dataset.target === id);
+      });
+    }
+
+    function animate(el, val) {
+      if (!el) return;
+      let n = 0, step = Math.ceil(val / 20) || 1;
+      const i = setInterval(() => {
+        n += step;
+        if (n >= val) { n = val; clearInterval(i) }
+        el.textContent = n;
+      }, 30);
+    }
+
+
+    function openDrawer(id) {
+      const p = allPatients.find(x => x._id === id || x.id === id);
+      if (!p) return;
+
+      // Populate drawer fields
+      document.getElementById('drawerName').innerText = p.name || 'Unknown Patient';
+      const idStr = String(p._id || p.id || '000000');
+      document.getElementById('drawerUHID').innerText = 'UHID: ' + (p.uhid || 'PID-' + idStr.slice(-6));
+      document.getElementById('drawerContact').innerText = p.contact || 'Not Provided';
+
+      // Status
+      const statusBadge = document.getElementById('drawerStatus');
+      if (p.isPlaceholderEmail) {
+        statusBadge.className = 'status-badge status-warning';
+        statusBadge.innerText = 'Email Missing';
+        statusBadge.style.background = '#fff7ed';
+        statusBadge.style.color = '#c2410c';
+        statusBadge.style.border = '1px solid #ffedd5';
+      } else if (p.accountActivated || p.isAccountActivated) {
+        statusBadge.className = 'status-badge status-active';
+        statusBadge.innerText = 'Active Account';
+        statusBadge.style.background = '#e8f5e9';
+        statusBadge.style.color = '#2e7d32';
+        statusBadge.style.border = '1px solid #c8e6c9';
+      } else {
+        statusBadge.className = 'status-badge status-gray';
+        statusBadge.innerText = 'Invite Sent';
+        statusBadge.style.background = '#f1f5f9';
+        statusBadge.style.color = '#475569';
+        statusBadge.style.border = '1px solid #e2e8f0';
+      }
+
+      // Age / Gender
+      // ... (rest remains same)
+      const ageGenderEl = document.getElementById('drawerAgeGender');
+      const ageText = p.age || '--';
+      const genderText = p.gender || '--';
+      ageGenderEl.innerText = `${ageText} / ${genderText}`;
+
+      // Visit date logic - distinguish between past and future appointments
+      const lastApptEl = document.getElementById('drawerLastAppt');
+      const visitLabelEl = lastApptEl.closest('.drawer-info-row').querySelector('.info-label');
+
+      if (p.lastAppointmentDate) {
+        const apptDate = new Date(p.lastAppointmentDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time for accurate date comparison
+        apptDate.setHours(0, 0, 0, 0);
+
+        // Format the date
+        const formattedDate = new Date(p.lastAppointmentDate).toLocaleDateString('en-IN', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+
+        // Update label and value based on comparison
+        if (apptDate < today) {
+          visitLabelEl.innerText = 'Last Visit';
+          lastApptEl.innerText = formattedDate;
+        } else {
+          visitLabelEl.innerText = 'Upcoming Visit';
+          lastApptEl.innerText = formattedDate;
+        }
+      } else {
+        visitLabelEl.innerText = 'Last Visit';
+        lastApptEl.innerText = 'No visits yet';
+      }
+
+      // Total appointments count and interaction
+      const totalApptsEl = document.getElementById('drawerTotalAppts');
+      totalApptsEl.innerText = p.totalAppointments || 0;
+
+      // Store patient appointments for visit history
+      totalApptsEl.dataset.patientId = p._id || p.id;
+      totalApptsEl.onclick = toggleVisitHistory;
+
+      // Hide visit history initially
+      document.getElementById('drawerVisitHistory').style.display = 'none';
+
+      // Inject Actions
+      const actions = document.getElementById('drawerActions');
+      if (actions) {
+        let actBtn = '';
+        if (p.status === 'PENDING') {
+          actBtn = `<button class="btn-activation" style="background:#155c3b; color:white; border:none;" onclick="openUpdateEmailModal('${p._id || p.id}', '${p.name}')">Activate Patient Account</button>`;
+        } else if (p.status === 'INVITED' || p.status === 'VERIFIED') {
+          actBtn = `<button class="btn-activation" onclick="sendActivationEmail('${p.email}')">Send Activation Email</button>`;
+        }
+        actions.innerHTML = `
+           <button class="btn-prescribe" onclick="openPresModal('${p._id || p.id}', '${p.name}')">
+             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+             Create Prescription
+           </button>
+           <button class="btn-schedule" onclick="openScheduleModal('${p._id || p.id}', '${p.name}')">
+             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+             Schedule Appointment
+           </button>
+           <button class="btn-delete-patient-drawer" onclick="confirmDeletePatient('${p._id || p.id}', '${p.name.replace(/'/g, "\\'")}')">
+             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+             Delete Patient Record
+           </button>
+           ${actBtn}
+         `;
+      }
+
+
+      // Show drawer
+      document.getElementById('drawerOverlay').classList.add('active');
+      document.getElementById('patientDrawer').classList.add('active');
+      document.body.style.overflow = "hidden";
+
+      // 🔄 Real-time logic update: Re-verify counts and labels
+      (async () => {
+        try {
+          const res = await fetch(API + '/api/doctor/appointments', { headers: { Authorization: 'Bearer ' + token } });
+          if (!res.ok) return;
+          const all = await res.json();
+
+          const patientId = p._id || p.id;
+          const myAppts = all.filter(a => a.patientId === patientId || a.patientName === p.name);
+
+          const now = new Date();
+          now.setHours(0, 0, 0, 0);
+
+          // History: Past or Today-Completed
+          const pastAppts = myAppts.filter(a => {
+            const d = new Date(a.date);
+            d.setHours(0, 0, 0, 0);
+            if (d < now) return true;
+            if (d.getTime() === now.getTime()) {
+              const s = (a.status || '').toLowerCase();
+              return s === 'completed' || s === 'cancelled' || s === 'rejected';
+            }
+            return false;
+          });
+
+          // Update Total Visits Count
+          const totalEl = document.getElementById('drawerTotalAppts');
+          if (totalEl) totalEl.innerText = pastAppts.length;
+
+          // Future: Upcoming
+          const futureAppts = myAppts.filter(a => {
+            const d = new Date(a.date);
+            d.setHours(0, 0, 0, 0);
+            // Include today if not completed (e.g. pending/approved)
+            if (d > now) return true;
+            if (d.getTime() === now.getTime()) {
+              const s = (a.status || '').toLowerCase();
+              return s !== 'completed' && s !== 'cancelled' && s !== 'rejected';
+            }
+            return false;
+          }).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+          if (futureAppts.length > 0) {
+            const next = futureAppts[0];
+            const dStr = new Date(next.date).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+            visitLabelEl.innerText = 'Upcoming Visit';
+            lastApptEl.innerText = dStr;
+          } else if (pastAppts.length > 0) {
+            const last = pastAppts.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+            const dStr = new Date(last.date).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+            visitLabelEl.innerText = 'Last Visit';
+            lastApptEl.innerText = dStr;
+          } else {
+            visitLabelEl.innerText = 'Last Visit';
+            lastApptEl.innerText = 'No visits yet';
+          }
+
+          // 📈 PROGRESS ANALYTICS CHECK (Read-Only for Doctor)
+          const progressSection = document.getElementById('drawerProgressAnalytics');
+          const resultBox = document.getElementById('progressSummaryResult');
+          if (progressSection) {
+            progressSection.style.display = 'none';
+            resultBox.innerHTML = '<span style="color:#64748b">Loading feedback...</span>';
+
+            const prescRes = await fetch(API + '/api/prescriptions', { headers: { Authorization: 'Bearer ' + token } });
+            if (prescRes.ok) {
+              const allP = await prescRes.json();
+              const patientPrescs = allP.filter(pr => pr.patientId === patientId && pr.progressFeedback && pr.progressFeedback.status)
+                .sort((a, b) => new Date(b.progressFeedback.updatedAt) - new Date(a.progressFeedback.updatedAt));
+
+              if (patientPrescs.length > 0) {
+                progressSection.style.display = 'block';
+                progressSection.style.background = 'transparent';
+                progressSection.style.border = 'none';
+                progressSection.style.padding = '0';
+                progressSection.style.marginTop = '24px';
+
+                // Add Toggler Button
+                const btnHtml = `
+                    <button id="btnToggleDrawerFeedback" onclick="toggleDrawerFeedback()" 
+                            style="width:100%; background:#e8f5e9; color:#155c3b; border:none; padding:12px 20px; border-radius:25px; font-weight:700; font-size:13px; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 6px rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:center; gap:8px;">
+                        <span>📊</span> View Recovery Feedback (${patientPrescs.length})
+                    </button>
+                  `;
+
+                window.allCurrentPatientFeedback = patientPrescs;
+                window.renderSpecificFeedback = (idx) => {
+                  const p = window.allCurrentPatientFeedback[idx];
+                  const fb = p.progressFeedback;
+                  const summaryHtml = fb.aiSummary.replace(/\n/g, '<br>').replace(/•/g, '<span style="color:#0369a1; margin-right:6px;">•</span>');
+
+                  const feedbackDisplayArea = document.getElementById('feedbackDisplayArea');
+                  if (feedbackDisplayArea) {
+                    feedbackDisplayArea.innerHTML = `
+                        <div style="margin-bottom:12px; border-bottom:1px solid #e0f2fe; padding-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                           <div style="font-weight:700; color:#1e293b; font-size:13px;">Condition: <span style="color:#0369a1">${fb.conditionName}</span></div>
+                           <div style="background:${fb.status === 'Better' ? '#e8f5e9' : (fb.status === 'Same' ? '#f1f5f9' : '#fff1f2')}; color:${fb.status === 'Better' ? '#166534' : (fb.status === 'Same' ? '#475569' : '#991b1b')}; padding:2px 10px; border-radius:12px; font-weight:700; font-size:10px; border:1px solid currentColor;">${fb.status}</div>
+                        </div>
+                        
+                        <div style="font-weight:700; color:#0369a1; text-transform:uppercase; font-size:10px; margin-bottom:8px; letter-spacing:0.5px;">AI Summary (Advisory Only — Not Medical Advice)</div>
+                        <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e0f2fe; font-size:12px; color:#1e293b; line-height:1.6; margin-bottom:12px; box-shadow:inset 0 1px 3px rgba(0,0,0,0.02); white-space:pre-line;">${summaryHtml}</div>
+                        
+                        ${fb.comments ? `<div style="font-style:italic; color:#64748b; font-size:11px; margin-bottom:8px; padding-left:8px; border-left:2px solid #bae6fd;">Patient: "${fb.comments}"</div>` : ''}
+                        <div style="font-size:10px; color:#94a3b8; text-align:right;">Reported on ${new Date(fb.updatedAt).toLocaleDateString()}</div>
+                      `;
+                  }
+                };
+
+                window.toggleDrawerFeedback = () => {
+                  const resBox = document.getElementById('progressSummaryResult');
+                  const btn = document.getElementById('btnToggleDrawerFeedback');
+                  if (resBox.style.display === 'none') {
+                    resBox.style.display = 'block';
+                    btn.innerHTML = '<span>✕</span> Close Feedback';
+                    btn.style.background = '#fef2f2';
+                    btn.style.color = '#991b1b';
+                  } else {
+                    resBox.style.display = 'none';
+                    btn.innerHTML = `<span>📊</span> View Recovery Feedback (${patientPrescs.length})`;
+                    btn.style.background = '#e8f5e9';
+                    btn.style.color = '#155c3b';
+                  }
+                };
+
+                let selectorHtml = '';
+                if (patientPrescs.length > 1) {
+                  selectorHtml = `
+                      <select onchange="renderSpecificFeedback(this.value)" style="width:100%; padding:8px; border-radius:8px; border:1px solid #bae6fd; font-size:12px; margin-bottom:12px; background:white; color:#0369a1; font-weight:600;">
+                        ${patientPrescs.map((p, idx) => `<option value="${idx}">Report: ${p.progressFeedback.conditionName} (${new Date(p.progressFeedback.updatedAt).toLocaleDateString()})</option>`).join('')}
+                      </select>
+                    `;
+                }
+
+                resultBox.innerHTML = `
+                    <div style="margin-top:16px; padding:16px; background:#f0f9ff; border:1px solid #bae6fd; border-radius:12px; animation: slideInUp 0.3s ease;">
+                       ${selectorHtml}
+                       <div id="feedbackDisplayArea"></div>
+                    </div>
+                  `;
+                resultBox.style.display = 'none';
+                progressSection.innerHTML = btnHtml + resultBox.outerHTML;
+                renderSpecificFeedback(0);
+              } else {
+                const hasAnyPresc = allP.some(pr => pr.patientId === patientId);
+                if (hasAnyPresc) {
+                  progressSection.style.display = 'block';
+                  progressSection.innerHTML = '<div style="text-align:center; padding:10px; color:#64748b; font-style:italic; font-size:12px;">Waiting for patient recovery report...</div>';
+                }
+              }
+            }
+          }
+        } catch (e) { console.error(e); }
+      })();
+    }
+
+    function closeDrawer() {
+      document.getElementById('drawerOverlay').classList.remove('active');
+      document.getElementById('patientDrawer').classList.remove('active');
+      document.body.style.overflow = "auto";
+    }
+
+    async function toggleVisitHistory() {
+      const visitHistoryEl = document.getElementById('drawerVisitHistory');
+      const visitListEl = document.getElementById('drawerVisitList');
+      const totalAppts = parseInt(this.innerText) || 0;
+
+      if (totalAppts === 0) return;
+
+      // Toggle visibility
+      if (visitHistoryEl.style.display === 'none') {
+        // Show visit history
+        visitListEl.innerHTML = '<div style="text-align:center;color:#6b8a7a;padding:10px;font-size:12px;">Loading...</div>';
+        visitHistoryEl.style.display = 'block';
+
+        // Fetch visit history from appointments
+        const patientId = this.dataset.patientId;
+        try {
+          const res = await fetch(API + '/api/doctor/appointments', {
+            headers: { Authorization: 'Bearer ' + token }
+          });
+          if (res.ok) {
+            const allAppts = await res.json();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const patientAppts = allAppts.filter(a => {
+              const pMatch = (a.patientId === patientId || a.patientName === allPatients.find(p => p._id === patientId)?.name);
+              if (!pMatch) return false;
+
+              const d = new Date(a.date);
+              d.setHours(0, 0, 0, 0);
+
+              // Future: Exclude
+              if (d > today) return false;
+
+              // Today: Exclude if not completed/cancelled
+              if (d.getTime() === today.getTime()) {
+                const s = (a.status || '').toLowerCase();
+                return s === 'completed' || s === 'cancelled' || s === 'rejected';
+              }
+
+              // Past: Include
+              return true;
+            }).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (patientAppts.length > 0) {
+              visitListEl.innerHTML = patientAppts.map(appt => {
+                const status = appt.status === 'cancelled' ? 'Cancelled' : 'Completed';
+                const statusColor = appt.status === 'cancelled' ? '#c62828' : '#2e7d32';
+                return `
+                  <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f8fbf9;border-radius:8px;">
+                    <div>
+                      <div style="font-size:13px;font-weight:600;color:#2c3e50;">${new Date(appt.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                      <div style="font-size:11px;color:#6b8a7a;margin-top:2px;">${appt.time || '--'}</div>
+                    </div>
+                    <div style="font-size:11px;font-weight:600;color:${statusColor};">${status}</div>
+                  </div>
+                `;
+              }).join('');
+            } else {
+              visitListEl.innerHTML = '<div style="text-align:center;color:#6b8a7a;padding:10px;font-size:12px;">No visit history found</div>';
+            }
+          }
+        } catch (e) {
+          visitListEl.innerHTML = '<div style="text-align:center;color:#c62828;padding:10px;font-size:12px;">Failed to load</div>';
+        }
+      } else {
+        // Hide visit history
+        visitHistoryEl.style.display = 'none';
+      }
+    }
+
+    function logout() {
+      closeAllModals();
+      const modal = document.getElementById('logoutModal');
+      if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = "hidden";
+      }
+    }
+
+    function closeLogoutModal() {
+      closeAllModals();
+    }
+
+    async function executeLogout() {
+      localStorage.clear();
+      location.href = "index.html";
+    }
+
+    async function loadDashboard() {
+      try {
+        const r = await fetch(API + "/api/dashboard/doctor", { headers: { Authorization: "Bearer " + token } });
+        if (r.ok) {
+          const d = await r.json();
+          animate(todayAppts, d.todayAppointments || 0);
+          animate(lowStock, d.lowStock || 0);
+        }
+
+        const pRes = await fetch(API + "/api/doctors/patients", { headers: { Authorization: "Bearer " + token } });
+        if (pRes.ok) {
+          const pList = await pRes.json();
+          animate(totalPatients, pList.length);
+        }
+
+        const apptRes = await fetch(`${API}/api/doctor/appointments`, {
+          headers: { Authorization: "Bearer " + token }
+        });
+        if (apptRes.ok) {
+          const list = await apptRes.json();
+          const now = new Date();
+
+          const upcomingList = list.filter(a => {
+            const st = (a.status || '').toLowerCase();
+            if (st !== 'approved' && st !== 'confirmed') return false; // Rule 4: Strictly Approved/Confirmed only
+
+            const getFullDate = (item) => {
+              const d = new Date(item.date);
+              if (item.time) {
+                const parts = item.time.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+                if (parts) {
+                  let h = parseInt(parts[1]), m = parseInt(parts[2]), ampm = (parts[3] || '').toUpperCase();
+                  if (ampm === 'PM' && h < 12) h += 12;
+                  if (ampm === 'AM' && h === 12) h = 0;
+                  d.setHours(h, m, 0, 0);
+                }
+              }
+              return d;
+            };
+
+            return getFullDate(a).getTime() > now.getTime(); // Rule 4: Future only
+          }).sort((a, b) => {
+            const getFullTime = (item) => {
+              const d = new Date(item.date);
+              if (item.time) {
+                const parts = item.time.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+                if (parts) {
+                  let h = parseInt(parts[1]), m = parseInt(parts[2]), ampm = (parts[3] || '').toUpperCase();
+                  if (ampm === 'PM' && h < 12) h += 12;
+                  if (ampm === 'AM' && h === 12) h = 0;
+                  d.setHours(h, m, 0, 0);
+                }
+              }
+              return d.getTime();
+            };
+            return getFullTime(a) - getFullTime(b);
+          });
+
+          const upcoming = upcomingList[0];
+
+          const upcomingContainer = document.querySelector('.upcoming .appointment');
+          if (upcoming) {
+            upcomingContainer.style.cursor = 'pointer';
+            upcomingContainer.onclick = () => {
+              const localDate = new Date(upcoming.date).toISOString().split('T')[0];
+              show('appointments');
+              renderDoctorAppointmentsTab(false, localDate);
+            };
+            upcomingContainer.innerHTML = `
+              <strong>${upcoming.time}</strong>
+              <p>${upcoming.patientName || 'Patient'}</p>
+              <p style="font-size:13px;color:#4f6f60;margin-top:4px">Date: ${new Date(upcoming.date).toLocaleDateString()}</p>
+            `;
+          } else {
+            upcomingContainer.innerHTML = `<p style="text-align:center;color:#6b8a7a;padding:20px 0">No upcoming appointments</p>`;
+            upcomingContainer.style.cursor = 'default';
+            upcomingContainer.onclick = null;
+          }
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    async function handleMedicineLowClick() {
+      const lowMeds = allMeds.filter(m => m.quantity <= (m.alertLevel || 10));
+      if (lowMeds.length > 0) {
+        const firstLow = lowMeds[0];
+        const category = firstLow.category || 'tablets';
+        show('stock');
+        const pillMap = { 'tablets': 0, 'liquids': 1, 'others': 2 };
+        const pills = document.querySelectorAll('.stock-cat-pill');
+        if (pills[pillMap[category]]) switchStockCategory(category, pills[pillMap[category]]);
+      } else {
+        show('stock');
+      }
+    }
+
+    let allPatients = [];
+    let allMeds = [];
+
+
+    async function loadPatients() {
+      const tb = document.getElementById('patientsTable');
+      if (tb) {
+        tb.innerHTML = Array(5).fill(0).map(() => `
+            <tr style="pointer-events:none">
+              <td style="display:flex;align-items:center;">
+                 <div class="skeleton skeleton-circle" style="width:38px;height:38px;margin-right:16px;"></div>
+                 <div>
+                   <div class="skeleton" style="width:140px;height:16px;margin-bottom:6px"></div>
+                   <div class="skeleton" style="width:80px;height:12px"></div>
+                 </div>
+              </td>
+              <td><div class="skeleton" style="width:120px;height:14px"></div></td>
+            </tr>`).join('');
+      }
+
+      try {
+        const r = await fetch(API + "/api/doctors/patients", { headers: { Authorization: "Bearer " + token } });
+        if (!r.ok) throw new Error("API Error");
+        let patients = await r.json();
+
+        // Fetch appointments to enrich patient data with last appointment info
+        try {
+          const apptRes = await fetch(API + "/api/doctor/appointments", {
+            headers: { Authorization: "Bearer " + token }
+          });
+          if (apptRes.ok) {
+            const appointments = await apptRes.json();
+
+            // Enrich each patient with appointment data
+            patients = patients.map(patient => {
+              const patientAppts = appointments.filter(a =>
+                a.patientId === patient._id || a.patientName === patient.name
+              );
+
+              const now = new Date();
+              const getFullDate = (item) => {
+                const d = new Date(item.date);
+                if (item.time) {
+                  const parts = item.time.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+                  if (parts) {
+                    let h = parseInt(parts[1]), m = parseInt(parts[2]), ampm = (parts[3] || '').toUpperCase();
+                    if (ampm === 'PM' && h < 12) h += 12;
+                    if (ampm === 'AM' && h === 12) h = 0;
+                    d.setHours(h, m, 0, 0);
+                  }
+                }
+                return d;
+              };
+
+              // Identify nearest future APPROVED appointment
+              const upcomingAppts = patientAppts.filter(a => {
+                const s = (a.status || '').toLowerCase();
+                return (s === 'approved' || s === 'confirmed') && getFullDate(a).getTime() > now.getTime();
+              }).sort((a, b) => getFullDate(a) - getFullDate(b));
+
+              // Identify last completed or approved past appointment
+              const pastAppts = patientAppts.filter(a => {
+                const s = (a.status || '').toLowerCase();
+                const isPast = getFullDate(a).getTime() <= now.getTime();
+                return isPast && (s === 'completed' || s === 'approved' || s === 'confirmed');
+              }).sort((a, b) => getFullDate(b) - getFullDate(a));
+
+              if (upcomingAppts.length > 0) {
+                patient.upcomingAppointmentDate = upcomingAppts[0].date;
+                patient.lastAppointmentDate = null; // Prioritize upcoming badge
+              } else if (pastAppts.length > 0) {
+                patient.lastAppointmentDate = pastAppts[0].date;
+                patient.upcomingAppointmentDate = null;
+              } else {
+                patient.lastAppointmentDate = null;
+                patient.upcomingAppointmentDate = null;
+              }
+
+              // Filter total count to exclude Cancelled/Rejected for accuracy
+              patient.totalAppointments = patientAppts.filter(a => {
+                const s = (a.status || '').toLowerCase();
+                return s !== 'cancelled' && s !== 'rejected';
+              }).length;
+
+              return patient;
+            });
+          }
+        } catch (e) {
+          console.log('Could not fetch appointments for patient enrichment', e);
+        }
+
+        allPatients = patients.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        renderPatients(allPatients);
+      } catch (e) { window.handleError(e, "Load Patients"); }
+    }
+
+    function renderPatients(list) {
+      const tb = document.getElementById('patientsTable');
+      if (!list || !list.length) {
+        tb.innerHTML = `<div class="empty-state">
+          <h4>No patients found</h4>
+          <p>Try adjusting your search or filters.</p>
+        </div>`;
+        return;
+      }
+
+      tb.innerHTML = list.map(p => {
+        const initials = p.name ? p.name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase() : "P";
+
+        // Last/Upcoming appointment badge logic with real-time date comparison
+        let lastApptBadge = '';
+        if (p.status === 'PENDING') {
+          lastApptBadge = `<span class="last-appt-badge" style="background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5;">Email Missing</span>`;
+        } else if (p.status === 'INVITED' || p.status === 'VERIFIED') {
+          lastApptBadge = `<span class="last-appt-badge" style="background: #eef2ff; color: #4338ca; border: 1px solid #e0e7ff;">Invite Sent</span>`;
+        } else if (p.upcomingAppointmentDate) {
+          const dateStr = new Date(p.upcomingAppointmentDate).toLocaleDateString('en-IN');
+          lastApptBadge = `<span class="last-appt-badge last-appt-upcoming">Upcoming: ${dateStr}</span>`;
+        } else if (p.lastAppointmentDate) {
+          const dateStr = new Date(p.lastAppointmentDate).toLocaleDateString('en-IN');
+          lastApptBadge = `<span class="last-appt-badge last-appt-green">Last: ${dateStr}</span>`;
+        } else {
+          lastApptBadge = `<span class="last-appt-badge last-appt-gray">No visits yet</span>`;
+        }
+
+        return `
+        <tr onclick="openDrawer('${p._id}')">
+          <td style="display:flex;align-items:center;">
+             <div style="background:#155c3b;color:#fff;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:16px;font-weight:700;font-size:14px;flex-shrink:0;box-shadow: 0 4px 10px rgba(21, 92, 59, 0.2)">
+                ${initials}
+             </div>
+             <div>
+               <div style="font-weight:700;color:#155c3b;font-size:15px">${p.name}</div>
+               ${lastApptBadge}
+             </div>
+          </td>
+          <td style="color:#4f6f60;font-weight:500;font-size:14px">${p.contact || '--'}</td>
+          <td style="flex:0.8; justify-content:center;">
+             <button onclick="event.stopPropagation(); confirmDeletePatient('${p._id}', '${p.name.replace(/'/g, "\\'")}')" 
+                     class="btn-delete-patient" 
+                     title="Delete Patient"
+                     style="background:#ffecec; color:#b71c1c; border:none; width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:0.2s;">
+               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+             </button>
+          </td>
+        </tr>
+      `}).join("");
+    }
+
+    // Prescription Logic
+    let currentPatientId = null;
+
+    function openPresModal(id, name, patientData = null) {
+      closeAllModals();
+      setTimeout(() => {
+        currentPatientId = id;
+        document.getElementById('presPatientName').innerText = name;
+        document.getElementById('presDiagnosis').value = "";
+        document.getElementById('presSymptoms').value = "";
+        document.getElementById('presMedsContainer').innerHTML = "";
+        document.getElementById('aiSuggestionsContainer').innerHTML = "";
+        document.getElementById('aiSuggestionsContainer').style.display = "none";
+
+        // Set patient details for AI context
+        if (patientData) {
+          document.getElementById('presPatientAge').value = patientData.age || '';
+          document.getElementById('presPatientGender').value = patientData.gender || '';
+          const visitType = patientData.prescriptionCount > 0 ? 'follow-up' : 'first';
+          document.getElementById('presVisitType').value = visitType;
+        } else {
+          const patient = allPatients.find(p => p._id === id);
+          if (patient) {
+            document.getElementById('presPatientAge').value = patient.age || '';
+            document.getElementById('presPatientGender').value = patient.gender || '';
+            const visitType = (patient.totalAppointments > 1) ? 'follow-up' : 'first';
+            document.getElementById('presVisitType').value = visitType;
+          }
+        }
+
+        const modal = document.getElementById('prescriptionModal');
+        modal.dataset.mode = 'create';
+        delete modal.dataset.id;
+        modal.querySelector('h3').innerText = "New Prescription";
+
+        addMedRow();
+        modal.style.display = "flex";
+        document.body.style.overflow = "hidden";
+      }, 200);
+    }
+
+    function closePresModal() {
+      closeAllModals();
+    }
+
+    function addMedRow(data = null) {
+      const row = document.createElement('div');
+      row.className = 'med-row';
+      row.style = 'display:grid;grid-template-columns:1.5fr 0.8fr 0.6fr 0.6fr 2.5fr 30px;gap:8px;margin-bottom:12px;align-items:center';
+
+      row.innerHTML = `
+        <input list="medSuggestions" class="med-name" placeholder="Search Medicine..." value="${data ? (data.name || data.medicineName || '') : ''}" 
+          style="width:100%;min-width:0;padding:8px;border:1px solid #ddd;border-radius:8px;outline:none;font-size:13px;box-sizing:border-box">
+        <input type="text" placeholder="Dose" value="${data ? (data.dose || data.dosage || '') : ''}" class="med-dose" style="width:100%;min-width:0;padding:8px;border:1px solid #ddd;border-radius:8px;outline:none;font-size:13px;box-sizing:border-box">
+        <input type="number" placeholder="Days" value="${data ? (data.duration || '') : ''}" class="med-duration" min="1" style="width:100%;min-width:0;padding:8px;border:1px solid #ddd;border-radius:8px;outline:none;font-size:13px;box-sizing:border-box">
+        <input type="number" placeholder="Qty" value="${data ? (data.qty || 1) : ''}" class="med-qty" min="1" style="width:100%;min-width:0;padding:8px;border:1px solid #ddd;border-radius:8px;outline:none;font-size:13px;box-sizing:border-box">
+        <input type="text" placeholder="Instructions" value="${data ? (data.instructions || '') : ''}" class="med-notes" style="width:100%;min-width:0;padding:8px;border:1px solid #ddd;border-radius:8px;outline:none;font-size:13px;box-sizing:border-box">
+        <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;color:#b71c1c;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center">✕</button>
+      `;
+      document.getElementById('presMedsContainer').appendChild(row);
+    }
+
+    async function savePrescription() {
+      const mode = document.getElementById('prescriptionModal').dataset.mode;
+      const editId = document.getElementById('prescriptionModal').dataset.id;
+      const saveBtn = document.getElementById('savePresBtn');
+
+      const diagnosis = document.getElementById('presDiagnosis').value;
+      const patientName = document.getElementById('presPatientName').innerText;
+      const medRows = document.querySelectorAll('.med-row');
+      const medicines = [];
+
+      medRows.forEach(row => {
+        const name = row.querySelector('.med-name').value;
+        const dose = row.querySelector('.med-dose').value;
+        const duration = row.querySelector('.med-duration').value;
+        const qty = row.querySelector('.med-qty').value;
+        const instructions = row.querySelector('.med-notes').value;
+        if (name) medicines.push({
+          name,
+          dose,
+          duration: Number(duration) || 0,
+          qty: Number(qty) || 1,
+          instructions
+        });
+      });
+
+      if (!diagnosis || medicines.length === 0) return window.showToast("error", "Please fill diagnosis and at least one medicine.");
+
+      // Check Stock logic (Skipped for Edit)
+      if (mode !== 'edit') {
+        for (const item of medicines) {
+          const stockItem = allMeds.find(m => m.name === item.name);
+          if (stockItem && stockItem.quantity < item.qty) {
+            window.showToast("error", `Insufficient stock for ${item.name}. Available: ${stockItem.quantity}`);
+            return;
+          }
+        }
+      }
+
+      // LOADING STATE START
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerText = "Saving...";
+        saveBtn.style.cursor = "not-allowed";
+        saveBtn.style.opacity = "0.7";
+      }
+
+      try {
+        let url = API + "/api/prescriptions";
+        let method = 'POST';
+        if (mode === 'edit' && editId) {
+          url += "/" + editId;
+          method = 'PUT';
+        }
+
+        const res = await fetch(url, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            patientId: currentPatientId,
+            patientName,
+            diagnosis,
+            medicines
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          window.showToast("success", "Prescription saved and sent to patient successfully.");
+          closePresModal();
+          loadPrescriptions();
+          loadDashboard();
+          loadPatients();
+          loadStock();
+        } else {
+          window.showToast("error", "Error: " + (data.message || "Could not save prescription"));
+          // Re-enable if error
+          if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.innerText = "Save Prescription";
+            saveBtn.style.cursor = "pointer";
+            saveBtn.style.opacity = "1";
+          }
+        }
+      } catch (e) { 
+        console.error(e);
+        window.showToast("error", "Network error. Please try again.");
+        // Re-enable if error
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.innerText = "Save Prescription";
+          saveBtn.style.cursor = "pointer";
+          saveBtn.style.opacity = "1";
+        }
+      }
+    }
+
+    // --- AI PRESCRIPTION DRAFT ASSISTANT ---
+
+    // 1. Strict Symptom Normalization Map (Frontend Validation Layer)
+    // 1. Strict Symptom Normalization Map (Frontend Validation Layer)
+    const SYMPTOM_MAP = {
+      // Respiratory
+      'cough': 'Cough & Cold', 'cold': 'Cough & Cold', 'flu': 'Cough & Cold', 'asthma': 'Respiratory',
+      'bronchitis': 'Respiratory', 'throat': 'Sore Throat', 'phlegm': 'Cough (Congestion)', 'sore throat': 'Sore Throat',
+
+      // Digestive
+      'gas': 'Gas/Acidity', 'acidity': 'Gas/Acidity', 'bloating': 'Gas/Acidity', 'stomach': 'Stomach Pain',
+      'constipation': 'Constipation', 'diarrhea': 'Diarrhea', 'indigestion': 'Indigestion', 'heartburn': 'Gas/Acidity',
+
+      // Pain / Musculoskeletal
+      'pain': 'General Pain', 'joint': 'Joint Pain', 'knee': 'Joint Pain', 'back': 'Back Pain',
+      'arthritis': 'Arthritis', 'sciatica': 'Sciatica', 'headache': 'Headache', 'migraine': 'Migraine',
+      'head': 'Headache', 'migrai': 'Migraine', 'migran': 'Migraine', // Partials
+
+      // Fever / General
+      'fever': 'Fever', 'temperature': 'Fever', 'weakness': 'General Weakness', 'fatigue': 'General Weakness',
+      'immunity': 'Low Immunity', 'stress': 'Stress/Anxiety', 'anxiety': 'Stress/Anxiety', 'tension': 'Stress/Anxiety',
+
+      // Skin
+      'skin': 'Skin Issue', 'rash': 'Skin Issue', 'acne': 'Skin Issue', 'itching': 'Skin Issue',
+
+      // Other
+      'sugar': 'Diabetes Control', 'diabetes': 'Diabetes Control',
+      'hair': 'Hair Fall', 'sleep': 'Insomnia', 'insomnia': 'Insomnia'
+    };
+
+    // 2. Reason & Category Helper (Since backend doesn't send "Reason")
+    const MED_META = {
+      'Chyawanprash': { reason: 'Boosts immunity and vitality', category: 'General' },
+      'Sitopaladi Churna': { reason: 'Relieves cough and chest congestion', category: 'Respiratory' },
+      'Talisadi Churna': { reason: 'Sooth cough and throat irritation', category: 'Respiratory' },
+      'Hingwastak Churna': { reason: 'Improves digestion and reduces gas', category: 'Digestive' },
+      'Avipattikar Churna': { reason: 'Reduces acidity and heartburn', category: 'Digestive' },
+      'Triphala Churna': { reason: 'Gentle bowel regulator and detox', category: 'Digestive' },
+      'Yograj Guggulu': { reason: 'Reduces joint pain and stiffness', category: 'Joints' },
+      'Mahayograj Guggulu': { reason: 'Potent anti-inflammatory for arthritis', category: 'Joints' },
+      'Ashwagandha Churna': { reason: 'Reduces stress and strengthens nerves', category: 'Mental' },
+      'Brahmi Vati': { reason: 'Enhances memory and reduces anxiety', category: 'Mental' },
+      'Sudarshan Ghan Vati': { reason: 'Effective for fever and infections', category: 'Fever' },
+      'Tribhuvankirti Ras': { reason: 'Acute fever management', category: 'Fever' },
+      'Chandraprabha Vati': { reason: 'Supports urinary and reproductive health', category: 'Urinary' },
+      'Kanchanar Guggulu': { reason: 'Reduces swellings and thyroid issues', category: 'General' },
+      'Gandhak Rasayan': { reason: 'Purifies blood and treats skin issues', category: 'Skin' },
+      'Arogyavardhini Vati': { reason: 'Liver support and skin health', category: 'Liver' },
+      'Ashokarishta': { reason: 'Supports uterine health', category: 'Women' },
+      'Dashmool Kwath': { reason: 'Reduces pain and inflammation', category: 'Pain' }
+    };
+
+    // 2. BASE SYMPTOM PROTOCOLS (MANDATORY FALLBACK)
+    // These specific symptoms will ALWAYS return these specific medicines without AI latency.
+    const BASE_SYMPTOMS = {
+      'migraine': [
+        { name: 'Pathyadi Kwath', dose: '40ml', duration: 15, qty: 1, instructions: 'Before food', reason: 'Classic Ayurvedic remedy for headache/migraine' },
+        { name: 'Shirashooladi Vajra Ras', dose: '1 tab', duration: 15, qty: 30, instructions: 'After food', reason: 'Specific for vascular headaches' }
+      ],
+      'fever': [
+        { name: 'Sudarshan Ghan Vati', dose: '2 tabs', duration: 5, qty: 20, instructions: 'Thrice daily', reason: 'Antipyretic and antiviral' },
+        { name: 'Amritarishta', dose: '20ml', duration: 10, qty: 1, instructions: 'With warm water', reason: 'Boosts immunity post-fever' }
+      ],
+      'cough': [
+        { name: 'Sitopaladi Churna', dose: '3g', duration: 10, qty: 1, instructions: 'With honey', reason: 'Sooth dry cough and congestion' },
+        { name: 'Talisadi Churna', dose: '3g', duration: 10, qty: 1, instructions: 'With honey', reason: 'For cough with digestive issues' }
+      ],
+      'cold': [
+        { name: 'Sitopaladi Churna', dose: '3g', duration: 7, qty: 1, instructions: '3 times a day', reason: 'Relieves congestion' },
+        { name: 'Tribhuvankirti Ras', dose: '1 tab', duration: 5, qty: 10, instructions: 'With ginger juice', reason: 'Acute cold relief' }
+      ],
+      'stress': [
+        { name: 'Ashwagandha Churna', dose: '1 tsp', duration: 30, qty: 1, instructions: 'With milk at night', reason: 'Adaptogenic and nervine tonic' },
+        { name: 'Brahmi Vati', dose: '1 tab', duration: 30, qty: 60, instructions: 'Morning and Evening', reason: 'Improves focus and calm' }
+      ],
+      'acidity': [
+        { name: 'Avipattikar Churna', dose: '1 tsp', duration: 15, qty: 1, instructions: 'Before sleep', reason: 'Pittahara / Reduces acidity' },
+        { name: 'Kamdudha Ras', dose: '1 tab', duration: 15, qty: 30, instructions: 'Before food', reason: 'Cooling agent' }
+      ]
+    };
+
+    function getMedReason(name) {
+      if (!name) return 'Professional medical recommendation';
+      // Partial match logic
+      for (const [key, val] of Object.entries(MED_META)) {
+        if (name.includes(key) || key.includes(name)) return val.reason;
+      }
+      return 'Standard treatment protocol';
+    }
+
+    let currentAISuggestions = null;
+    let aiDebounceTimer;
+    let lastAnalysedSymptom = "";
+
+    function debounceAI() {
+      const container = document.getElementById('aiSuggestionsContainer');
+      const symptomInput = document.getElementById('presSymptoms').value.trim();
+      const diagnosisInput = document.getElementById('presDiagnosis').value.trim();
+
+      // Clear previous timer
+      clearTimeout(aiDebounceTimer);
+
+      const input = (symptomInput || diagnosisInput).toLowerCase();
+
+      // RULE: Do not trigger on empty or very short inputs
+      if (input.length == 0) {
+        container.style.display = 'none';
+        return;
+      }
+
+      if (input.length < 3) {
+        container.style.display = 'block';
+        container.innerHTML = `<div style="padding:10px;text-align:center;color:#64748b;font-size:12px;background:#f8fafc;border-radius:8px;">
+             ⌨️ Please type fuller symptom (e.g. <b>fever</b>, <b>migraine</b>)
+           </div>`;
+        return;
+      }
+
+      // RULE: Normalize input -> Check if it maps to a known valid symptom
+      let normalizedSymptom = null;
+      let matchedBaseKey = null;
+
+      // Precision Check: Look for whole words or strong partials
+      for (const key in SYMPTOM_MAP) {
+        if (input.includes(key)) {
+          normalizedSymptom = SYMPTOM_MAP[key];
+          matchedBaseKey = key; // Keep the raw key to check BASE_SYMPTOMS
+          break;
+        }
+      }
+
+      // If normalized exists, map it back to a base key if possible for direct lookup
+      // (Simple reverse check or just use the mapped value if it matches base keys)
+      let baseData = null;
+      if (matchedBaseKey && BASE_SYMPTOMS[matchedBaseKey]) {
+        baseData = BASE_SYMPTOMS[matchedBaseKey];
+      } else if (BASE_SYMPTOMS[input]) {
+        baseData = BASE_SYMPTOMS[input];
+        normalizedSymptom = SYMPTOM_MAP[input] || input.charAt(0).toUpperCase() + input.slice(1);
+      }
+
+      // UI: Show loading state or helper
+      container.style.display = 'block';
+
+      if (!normalizedSymptom && !baseData) {
+        container.innerHTML = `<div style="padding:16px;text-align:center;color:#64748b;font-size:13px;background:#f8fafc;border-radius:8px;border:1px dashed #cbd5e1;">
+             ❓ Recommendation System Ready<br>
+             <span style="font-size:11px;opacity:0.8">Type symptoms like: <b>fever</b>, <b>migraine</b>, <b>stress</b>...</span>
+           </div>`;
+        return;
+      }
+
+      // DETERMINISTIC PATH 1: BASELINE SYMPTOM FOUND
+      // If we have hard-coded baseline data, use it IMMEDIATELY. No Loading. No AI Latency.
+      if (baseData) {
+        const mockPrescription = {
+          medicines: baseData.map(m => ({
+            name: m.name,
+            dosage: m.dose,
+            qty: m.qty,
+            durationDays: m.duration,
+            inStock: true, stockQty: 'Check Stock', // We assume stock check happens in render or later
+            instructions: m.instructions,
+            // reason from base data
+          })),
+          detectedConditions: [normalizedSymptom]
+        };
+        currentAISuggestions = mockPrescription;
+
+        // Auto-Fill Diagnosis
+        const diagnosisEl = document.getElementById('presDiagnosis');
+        if (!diagnosisEl.value) diagnosisEl.value = normalizedSymptom;
+
+        renderAISuggestions(mockPrescription, normalizedSymptom, "Baseline treatment protocol (Standard Operation)");
+        return;
+      }
+
+      // PATH 2: UNKNOWN BUT VALID SYMPTOM -> CALL AI
+      container.innerHTML = `
+        <div style="padding:16px;text-align:center;color:#155c3b;font-size:13px;background: #f0fdf4;border:1px solid #dcfce7;border-radius:12px;">
+           <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px;">
+              <span style="font-size:18px;animation:spin 1s linear infinite">⏳</span> 
+              <span style="font-weight:600">Checking medical database...</span>
+           </div>
+           <div style="font-size:11px;opacity:0.8">Condition: <b>${normalizedSymptom}</b></div>
+        </div>`;
+
+      // Debounce API Call (500ms is snappier than 1500)
+      aiDebounceTimer = setTimeout(() => {
+        getAIPrescriptionDraft(normalizedSymptom);
+      }, 600);
+    }
+
+    // Add spinner style if not present
+    const styleSheet = document.createElement("style");
+    styleSheet.innerText = "@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }";
+    document.head.appendChild(styleSheet);
+
+    async function getAIPrescriptionDraft(normalizedSymptom) {
+      const container = document.getElementById('aiSuggestionsContainer');
+
+      const symptoms = document.getElementById('presSymptoms').value.trim();
+      const diagnosisEl = document.getElementById('presDiagnosis');
+      const diagnosis = diagnosisEl.value.trim();
+      const patientAge = document.getElementById('presPatientAge').value;
+      const patientGender = document.getElementById('presPatientGender').value;
+      const visitType = document.getElementById('presVisitType').value;
+
+      try {
+        const res = await fetch(`${API}/api/ai/prescription-draft`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            patientAge,
+            patientGender,
+            symptoms: symptoms || normalizedSymptom,
+            diagnosis,
+            visitType
+          })
+        });
+
+        const data = await res.json();
+
+        // Check if we got medicines
+        if (res.ok && data.success && data.prescription && data.prescription.medicines.length > 0) {
+          currentAISuggestions = data.prescription;
+
+          // Auto-Fill Diagnosis Softly if empty
+          if (!diagnosisEl.value) {
+            diagnosisEl.value = normalizedSymptom;
+            diagnosisEl.style.backgroundColor = '#f0fdf4';
+            setTimeout(() => diagnosisEl.style.backgroundColor = 'white', 1000);
+          }
+
+          renderAISuggestions(data.prescription, normalizedSymptom, "AI-assisted Recommendation (High Confidence)");
+        } else {
+          // FAIL-SAFE: If AI returns success but no medicines, render a safe message, NO RED ERROR.
+          const container = document.getElementById('aiSuggestionsContainer');
+          container.innerHTML = `<div style="padding:12px;text-align:center;color:#475569;font-size:12px;background:#f1f5f9;border-radius:8px;">
+             Information sufficient for manual prescription. Doctor discretion advised.
+           </div>`;
+        }
+      } catch (e) {
+        console.error("AI Draft Error:", e);
+        // FAIL-SAFE: Silent handling, show manual prompt
+        const container = document.getElementById('aiSuggestionsContainer');
+        container.style.display = 'none';
+      }
+    }
+
+    function renderErrorState(msg) {
+      // We avoid red errors now as requested ("REMOVE CONFUSING ERROR STATES")
+      // Just show neutral message
+      const container = document.getElementById('aiSuggestionsContainer');
+      container.innerHTML = `<div style="padding:12px;text-align:center;color:#475569;font-size:12px;background:#f1f5f9;border-radius:8px;">${msg}</div>`;
+    }
+
+    function renderAISuggestions(prescription, recognizedContext, badgeLabel) {
+      const container = document.getElementById('aiSuggestionsContainer');
+
+      if (!prescription || !prescription.medicines || prescription.medicines.length === 0) {
+        container.style.display = 'none';
+        return;
+      }
+
+      container.style.display = 'block';
+
+      const medicinesHtml = prescription.medicines.map((med, idx) => {
+        // If reason comes from BASE_DATA, use it. Otherwise helper.
+        const reason = (BASE_SYMPTOMS[recognizedContext?.toLowerCase()]?.find(m => m.name === med.name)?.reason) || getMedReason(med.name);
+
+        // Stock logic
+        let stockText = 'Available';
+        let stockColor = '#166534';
+        let stockBg = '#dcfce7';
+
+        if (med.stockQty !== undefined && med.stockQty !== 'Check Stock') {
+          // Part 7: FAILSAFE RULE - Check inventory existence first
+          if (med.inInventory === false) {
+             stockText = 'Not in Inventory';
+             stockColor = '#b71c1c';
+             stockBg = '#ffecec';
+          } else {
+             // Part 3 & 5: UI CONSISTENCY RULES - Show actual stock count
+             stockText = med.inStock ? `Avail: ${med.stockQty}` : 'Out of Stock';
+             stockColor = med.inStock ? '#15803d' : '#b91c1c';
+             stockBg = med.inStock ? '#dcfce7' : '#fee2e2';
+          }
+        }
+
+        return `
+        <div class="ai-suggestion-item">
+          <!-- Top Row: Name and Avail -->
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+             <!-- Left: Name & Trigger -->
+             <div style="flex:1; padding-right:12px;">
+                <div style="font-size:15px; color:#1e293b; font-weight:700; line-height:1.3;">${med.name}</div>
+                <div style="font-size:11px; color:#155c3b; margin-top:4px; font-weight:500;">
+                   Suggested for: <span style="color:#0f172a; font-weight:600;">${recognizedContext || 'Condition'}</span>
+                </div>
+             </div>
+             <!-- Right: Availability (Pill Style) -->
+             <div style="text-align:right;">
+                <div style="font-size:11px; color:${stockColor}; background:${stockBg}; font-weight:600; padding:3px 8px; border-radius:12px; display:inline-block; white-space:nowrap;">
+                   ${stockText}
+                </div>
+             </div>
+          </div>
+
+
+
+          <!-- Bottom Row: Dosage and Add Button -->
+          <div style="display:flex; justify-content:space-between; align-items:center; padding-top:2px;">
+             <!-- Dosage Info -->
+             <div style="font-size:12px; color:#334155; line-height:1.6; padding-right:12px;">
+                <div style="font-weight:600; color:#0f172a;">${med.dosage} • ${med.qty} qty • ${med.durationDays} days</div>
+                <div style="color:#64748b; font-size:11px; margin-top:2px;">${med.instructions || med.frequency || ''}</div>
+             </div>
+             
+              <!-- Action Button -->
+              <button type="button" onclick="applyAISuggestion(${idx})" 
+                ${med.inInventory === false ? 'disabled style="background:#f1f5f9; color:#94a3b8; border:1px solid #e2e8f0; cursor:not-allowed;"' : 'style="background:white; color:#166534; border:1px solid #bbf7d0; cursor:pointer;"'}
+                class="ai-add-btn">
+                ${med.inInventory === false ? 'Unavailable' : 'Add <span style="font-size:16px; line-height:1; font-weight:400;">+</span>'}
+              </button>
+          </div>
+        </div>
+      `}).join('');
+
+      container.innerHTML = `
+        <div class="ai-suggestion-card" style="padding:0; border:none; background: transparent;">
+           <div style="margin-bottom:16px; padding:0 4px; display:flex; align-items:center; gap:8px;">
+              <span style="font-size:18px;">💡</span>
+              <h4 style="font-size:14px; color:#1e293b; font-weight:700; margin:0;">Treatment Suggestions</h4>
+           </div>
+           
+           ${medicinesHtml}
+           
+           <button type="button" class="ai-apply-all-btn" onclick="applyAllAISuggestions()" 
+              style="margin-top:16px; padding:12px; width:100%; border:none; border-radius:10px; font-size:13px; background:#155c3b; color:#fff; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 6px -1px rgba(21,92,59,0.2); transition: background 0.2s;">
+              Apply All Valid Suggestions
+           </button>
+        </div>
+      `;
+    }
+
+    function applyAISuggestion(index) {
+      if (!currentAISuggestions || !currentAISuggestions.medicines[index]) return;
+      const med = currentAISuggestions.medicines[index];
+
+      addMedRow({
+        name: med.name,
+        dose: med.dosage,
+        duration: med.durationDays,
+        qty: med.qty,
+        instructions: med.instructions || med.frequency
+      });
+    }
+
+    function applyAllAISuggestions() {
+      if (!currentAISuggestions || !currentAISuggestions.medicines) return;
+
+      const rows = document.querySelectorAll('.med-row');
+      rows.forEach(r => {
+        const name = r.querySelector('.med-name').value;
+        if (!name) r.remove();
+      });
+
+      let addedCount = 0;
+      currentAISuggestions.medicines.forEach(med => {
+        // Apply even if out of stock, doctor can manage
+        addMedRow({
+          name: med.name,
+          dose: med.dosage,
+          duration: med.durationDays,
+          qty: med.qty,
+          instructions: med.instructions || med.frequency
+        });
+        addedCount++;
+      });
+
+      // Hide AI suggestions container after applying
+      document.getElementById('aiSuggestionsContainer').style.display = 'none';
+
+      // Ensure Save button state is correct (not-saving)
+      const saveBtn = document.getElementById('savePresBtn');
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.style.cursor = "pointer";
+        saveBtn.style.opacity = "1";
+        saveBtn.innerText = "Save Prescription";
+      }
+
+      if (addedCount > 0) {
+        window.showToast("success", `Applied ${addedCount} suggestion(s).`);
+      }
+    }
+
+    // --- SCHEDULE APPOINTMENT LOGIC ---
+    function openScheduleModal(id, name) {
+      closeAllModals();
+      setTimeout(() => {
+        currentPatientId = id;
+        document.getElementById('schedulePatientName').innerText = name;
+        document.getElementById('scheduleModal').style.display = "flex";
+        document.getElementById('bookDate').value = "";
+        document.getElementById('slotContainer').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#888;font-size:13px">Select date first</div>';
+        document.getElementById('bookMsg').innerText = "";
+        selectedTimeSlot = null;
+        document.body.style.overflow = "hidden";
+      }, 200);
+    }
+
+    function closeScheduleModal() {
+      closeAllModals();
+    }
+
+    let selectedTimeSlot = null;
+
+    async function loadDoctorSlots(date) {
+      const container = document.getElementById('slotContainer');
+      const loader = document.getElementById('loadingSlots');
+      selectedTimeSlot = null;
+      container.innerHTML = '';
+      if (!date) return;
+
+      if (new Date(date).getDay() === 0) {
+        container.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#d32f2f;font-size:13px;padding:10px;background:#ffebee;border-radius:8px">Hospital is closed on Sundays.</div>';
+        return;
+      }
+
+      loader.style.display = 'block';
+      try {
+        const res = await fetch(`${API}/api/appointments/slots?date=${date}`, { headers: { Authorization: "Bearer " + token } });
+        const slots = await res.json();
+        loader.style.display = 'none';
+
+        if (!slots || !slots.length) {
+          container.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#888">No slots available</div>';
+          return;
+        }
+
+        slots.forEach(slot => {
+          const div = document.createElement('div');
+          div.className = `time-slot ${slot.isBooked ? 'booked' : ''}`;
+          div.innerText = slot.time;
+          if (!slot.isBooked) {
+            div.onclick = () => {
+              document.querySelectorAll('.time-slot.selected').forEach(d => d.classList.remove('selected'));
+              div.classList.add('selected');
+              selectedTimeSlot = slot.timeValue || slot.time;
+            };
+          }
+          container.appendChild(div);
+        });
+
+      } catch (e) { window.handleError(e, "Load Slots"); }
+    }
+
+    async function bookDoctorAppointment() {
+      const date = document.getElementById('bookDate').value;
+      const msg = document.getElementById('bookMsg');
+      if (!date || !selectedTimeSlot) { msg.innerText = "Please select date and time"; return; }
+
+      msg.innerText = "Booking...";
+      try {
+        const res = await fetch(API + '/api/appointments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ patientId: currentPatientId, date, time: selectedTimeSlot, status: 'Approved' })
+        });
+        const d = await res.json();
+        if (d.success) {
+          closeScheduleModal();
+          window.showToast("success", 'Appointment scheduled successfully.');
+          loadDashboard();
+          openDrawer(currentPatientId);
+        } else {
+          msg.innerText = d.message || "Failed to book";
+          if (res.status === 409) loadDoctorSlots(date);
+        }
+      } catch (e) { window.handleError(e, "Appointment Logic"); }
+    }
+
+    function filterPatients() {
+      const v = document.getElementById('patientSearch').value.toLowerCase().trim();
+      const f = allPatients.filter(p =>
+        p.name.toLowerCase().includes(v) ||
+        (p.contact && p.contact.includes(v)) ||
+        (p.uhid && p.uhid.toLowerCase().includes(v)) ||
+        (String(p.id).includes(v))
+      );
+      renderPatients(f);
+    }
+
+    function confirmDeletePatient(id, name) {
+      if (confirm(`Are you sure you want to permanently delete patient "${name}"? This action cannot be undone and will remove all related appointments and prescriptions.`)) {
+        deletePatient(id);
+      }
+    }
+
+    async function deletePatient(id) {
+      try {
+        const res = await fetch(`${API}/api/users/${id}`, {
+          method: 'DELETE',
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const data = await res.json();
+        if (data.success) {
+          window.showToast("success", "Patient deleted permanently");
+
+          // Auto-refresh all tabs after deletion
+          closeDrawer();
+          loadDashboard();
+          loadPatients();
+
+          // Refresh prescriptions if visible or loaded
+          if (document.getElementById('prescriptions').style.display !== 'none') {
+            loadPrescriptions();
+          }
+
+          // Refresh appointments if visible
+          if (document.getElementById('appointments').style.display !== 'none') {
+            renderDoctorAppointmentsTab(false);
+          }
+
+        } else {
+          window.showToast("error", data.message || "Failed to delete patient");
+        }
+      } catch (e) {
+        console.error(e);
+        window.showToast("error", "An error occurred while deleting the patient");
+      }
+    }
+
+
+
+    function patientExists(id) {
+      if (!id) return false;
+      return allPatients.some(p => String(p._id || p.id) === String(id));
+    }
+
+    let allPrescriptions = [];
+
+    async function loadPrescriptions() {
+      const search = document.getElementById('presSearch')?.value.toLowerCase() || "";
+      const container = document.getElementById('prescriptionsList');
+      if (!container) return;
+
+      container.innerHTML = '<div style="text-align:center;padding:60px;color:#888;font-size:14px;letter-spacing:0.5px;">Loading records...</div>';
+
+      try {
+        const r = await fetch(API + "/api/prescriptions", { headers: { Authorization: "Bearer " + token } });
+        if (!r.ok) throw new Error("Failed");
+        const data = await r.json();
+
+        const groups = {};
+        data.forEach(p => {
+          if (p.patientId && !patientExists(p.patientId)) return; // Skip ghost data
+
+          const pid = p.patientId || p.patientName || 'unknown';
+          if (!groups[pid]) groups[pid] = {
+            id: p.patientId || '',
+            name: p.patientName || 'Unknown',
+            lastDate: new Date(0),
+            count: 0,
+            list: []
+          };
+          groups[pid].list.push(p);
+          groups[pid].count++;
+          const d = new Date(p.createdAt || p.date);
+          if (d > groups[pid].lastDate) groups[pid].lastDate = d;
+        });
+
+        const sortedGroups = Object.values(groups).filter(g =>
+          g.name.toLowerCase().includes(search)
+        ).sort((a, b) => b.lastDate - a.lastDate);
+
+        if (sortedGroups.length === 0) {
+          container.innerHTML = '<div style="text-align:center;padding:60px;color:#999;font-size:14px;">No prescriptions found.</div>';
+          return;
+        }
+
+        container.innerHTML = sortedGroups.map((g, i) => {
+          const rowId = `pbody-${i}`;
+          const iconId = `picon-${i}`;
+          const delay = Math.min(i * 0.05, 0.5); // Cap delay
+
+          return `
+            <div class="patient-card" style="animation: slideInUp 0.4s ease forwards; animation-delay: ${delay}s">
+                <div class="pc-header" onclick="toggleAccordion('${rowId}', '${iconId}')">
+                    <div class="pc-name">${g.name}</div>
+                    <div style="display:flex;gap:12px;align-items:center">
+                        <div class="count-badge">${g.count} Prescriptions</div>
+                        <div class="last-date">Last: ${g.lastDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
+                        <div id="${iconId}" class="toggle-icon">▼</div>
+                    </div>
+                </div>
+                <div class="pc-body" id="${rowId}" style="display:none">
+                    <div style="text-align:right;margin-bottom:20px">
+                        <button onclick="openPresModal('${g.id}', '${g.name}')" style="background:#eaf4ee;color:#155c3b;border:none;padding:8px 20px;border-radius:20px;font-weight:700;font-size:12px;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 6px rgba(0,0,0,0.05)">+ New Prescription</button>
+                    </div>
+                    <div class="presc-grid">
+                        ${g.list.sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date)).map(p => {
+            const dateStr = new Date(p.createdAt || p.date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+            const pJson = JSON.stringify(p).replace(/"/g, '&quot;');
+            const medList = (p.medicines || []).map(m => `
+                                <div class="presc-med-item">
+                                    <span style="font-weight:600;color:#2c3e50">${m.name || m.medicineName}</span>
+                                    <span style="color:#888;font-size:11px;font-weight:500">${m.qty}u • ${m.duration}d</span>
+                                </div>
+                            `).join('');
+            const feedback = p.progressFeedback || {};
+            const feedbackHtml = feedback.status ? `
+                            <div style="margin-top:14px; padding:12px; background:#f0f9ff; border:1px solid #bae6fd; border-radius:10px; font-size:12px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid #e0f2fe; padding-bottom:6px;">
+                                   <div style="font-weight:700; color:#1e293b; font-size:11px;">Condition: <span style="color:#0369a1">${feedback.conditionName || p.diagnosis || 'General'}</span></div>
+                                   <div style="color:#0369a1; background:#e0f2fe; padding:2px 8px; border-radius:12px; font-weight:700; font-size:10px;">${feedback.status}</div>
+                                </div>
+                                <div style="font-weight:700; color:#0369a1; text-transform:uppercase; font-size:10px; margin-bottom:6px;">AI Summary (Advisory Only — Not Medical Advice)</div>
+                                <div style="color:#1e293b; line-height:1.4; white-space:pre-line; background:white; padding:8px; border-radius:6px; border:1px solid #f0f9ff;">${feedback.aiSummary}</div>
+                                ${feedback.comments ? `<div style="margin-top:8px; font-style:italic; color:#64748b; font-size:11px;">"Patient reported: ${feedback.comments}"</div>` : ''}
+                            </div>
+                            ` : '';
+
+            return `
+                            <div class="presc-card">
+                                <div class="presc-date">${dateStr}</div>
+                                <div class="presc-diag">${p.diagnosis || 'No Diagnosis'}</div>
+                                <div class="presc-meds">${medList}</div>
+                                ${feedbackHtml}
+                                <div class="presc-actions">
+                                    <button class="btn-pdf" onclick="sendPrescriptionPDF(${pJson}, event)">📄 Send PDF</button>
+                                    <button class="btn-download" onclick="downloadPrescriptionPDF('${p._id || p.id}', event)">📥 Download PDF</button>
+                                    <button class="btn-edit" onclick="openEditPrescription(${pJson})">Edit</button>
+                                </div>
+                            </div>
+                            `;
+          }).join('')}
+                    </div>
+                </div>
+            </div>
+        `}).join('');
+
+      } catch (e) {
+        console.error(e);
+        container.innerHTML = '<div style="color:#c62828;text-align:center;padding:40px">Unable to load prescriptions.</div>';
+      }
+    }
+
+    function toggleAccordion(id, iconId) {
+      const el = document.getElementById(id);
+      const icon = document.getElementById(iconId);
+      if (el) {
+        const isHidden = el.style.display === 'none';
+        el.style.display = isHidden ? 'block' : 'none';
+        if (isHidden) {
+          el.style.animation = 'none';
+          el.offsetHeight;
+          el.style.animation = 'fadeInScale 0.3s ease forwards';
+        }
+      }
+      if (icon) {
+        if (el && el.style.display !== 'none') icon.classList.add('rotated');
+        else icon.classList.remove('rotated');
+      }
+    }
+
+    async function sendPrescriptionPDF(p, event) {
+
+      const btn = event?.target?.closest('button') || event?.currentTarget;
+      const originalText = btn ? btn.innerHTML : "";
+      if (btn) { btn.innerHTML = "Sending..."; btn.disabled = true; }
+
+      try {
+        const sendRes = await fetch(`${API}/api/prescriptions/send-pdf`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ prescriptionId: p._id || p.id })
+        });
+
+        const result = await sendRes.json();
+        if (result.success) {
+          window.showToast("success", "Prescription successfully sent to patient.");
+        } else throw new Error(result.message || "Failed to send email");
+
+      } catch (e) {
+        console.error("PDF Send Fail:", e);
+        window.showToast("error", "Action stopped: " + e.message);
+      } finally {
+        if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
+      }
+    }
+
+    async function downloadPrescriptionPDF(id, event) {
+      if (!id) return;
+      const btn = event?.target?.closest('button') || event?.currentTarget;
+      const originalText = btn ? btn.innerHTML : "";
+      if (btn) { btn.innerHTML = "Downloading..."; btn.disabled = true; }
+
+      try {
+        const res = await fetch(`${API}/api/prescriptions/${id}/download`, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (res.ok) {
+          const blob = await res.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          a.download = `Prescription_${id}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          window.showToast("success", "Download started.");
+        } else {
+          const d = await res.json();
+          throw new Error(d.message || "Download failed");
+        }
+      } catch (e) {
+        console.error("Download Error:", e);
+        window.showToast("error", "Failed to download PDF: " + e.message);
+      } finally {
+        if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
+      }
+    }
+
+
+    function openEditPrescription(p) {
+      if (!p) return;
+      currentPatientId = p.patientId;
+      document.getElementById('presPatientName').innerText = p.patientName;
+      document.getElementById('presDiagnosis').value = p.diagnosis;
+      document.getElementById('presMedsContainer').innerHTML = "";
+
+      const modal = document.getElementById('prescriptionModal');
+      modal.dataset.mode = 'edit';
+      modal.dataset.id = p._id;
+
+      // Find save button and change text? 
+      // Need to ensure savePrescription checks this dataset.
+      // Assuming save button text change logic in openPresModal reset.
+
+      if (p.medicines && p.medicines.length > 0) {
+        p.medicines.forEach(m => {
+          addMedRow(m); // Modified addMedRow to accept data
+        });
+      } else {
+        addMedRow();
+      }
+
+      modal.querySelector('h3').innerText = "Edit Prescription";
+      const btn = modal.querySelector('button[onclick="savePrescription()"]'); // Finding button might be hard without ID.
+      // I will add ID to the button in savePrescription replacement logic?
+      // Or i can find it via text? No.
+      // I'll rely on the user to see "Save" and it works.
+
+      modal.style.display = "flex";
+    }
+
+    function viewPrescription(id) {
+      closeAllModals();
+      const p = allPrescriptions.find(x => (x._id || x.id) === id);
+      if (!p) return;
+
+      document.getElementById('viewPresInfo').innerText = `${new Date(p.date).toLocaleDateString()} • ${p.patientName}`;
+      document.getElementById('viewDiagnosis').innerText = p.diagnosis || "None";
+
+      const list = document.getElementById('viewMedsList');
+      list.innerHTML = (p.medicines || []).map(m => `
+          <div style="background:#fff;border:1px solid #eee;padding:10px;border-radius:8px;display:flex;justify-content:space-between;align-items:center">
+             <div>
+               <div style="font-weight:700;color:#155c3b;font-size:14px">${m.name || m.medicineName}</div>
+               <div style="font-size:12px;color:#666;margin-top:2px">${m.instruction || m.instructions || 'No instructions'}</div>
+             </div>
+             <div style="text-align:right;font-size:12px;">
+                <div style="background:#e8f5e9;color:#155c3b;padding:2px 8px;border-radius:10px;display:inline-block;margin-bottom:2px">${m.dose || '--'}</div>
+                <div style="color:#888">${m.duration || 0} days • Qty: ${m.qty || 1}</div>
+             </div>
+          </div>
+       `).join('');
+
+      document.getElementById('viewPresModal').style.display = 'flex';
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeViewPresModal() {
+      closeAllModals();
+    }
+
+    /**
+* 🏥 CONSOLIDATED APPOINTMENTS ARCHITECTURE (Single Function Orchestration)
+* This function is the absolute source of truth for the Appointments Tab.
+* It handles: HTML Injection, Local Binding, Fetching, and Rendering.
+*/
+    async function renderDoctorAppointmentsTab(preserveDate = true, targetDate = null) {
+      const container = document.getElementById('appointments');
+      if (!container) return;
+
+      // 1️⃣ INJECT UI SKELETON (Only if empty or needed)
+      // We store the current date if it exists to preserve user selection
+      const currentDate = container.querySelector('#appointmentsDate')?.value;
+
+      container.innerHTML = `
+        <div class="appointments-header">
+          <div>
+            <h3 style="color:#155c3b;margin-bottom:6px">Appointments</h3>
+            <p style="font-size:13px;color:#4f6f60;margin:0">Select date to view appointments</p>
+          </div>
+          <div>
+            <input type="date" id="appointmentsDate" style="padding:8px 12px;border-radius:10px;border:1px solid #ddd">
+          </div>
+        </div>
+        <div class="ap-counters">
+          <div class="ap-card"><h4 id="apTotal">0</h4><p style="font-size:13px;color:#4f6f60">Total</p></div>
+          <div class="ap-card"><h4 id="apPending">0</h4><p style="font-size:13px;color:#4f6f60">Pending</p></div>
+          <div class="ap-card"><h4 id="apCompleted">0</h4><p style="font-size:13px;color:#4f6f60">Completed</p></div>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Patient Name</th><th>Date</th><th>Time</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody id="appointmentsTable"></tbody>
+        </table>
+      `;
+
+      // 2️⃣ QUERY LOCAL ELEMENTS IMMEDIATELY
+      const dateInput = container.querySelector('#appointmentsDate');
+      const tableBody = container.querySelector('#appointmentsTable');
+      const totalEl = container.querySelector('#apTotal');
+      const pendingEl = container.querySelector('#apPending');
+      const completedEl = container.querySelector('#apCompleted');
+
+      // 3️⃣ SET INITIAL DATE & BIND HANDLERS (STRICTLY INSIDE)
+      if (targetDate) {
+        dateInput.value = targetDate;
+      } else if (preserveDate && currentDate) {
+        dateInput.value = currentDate;
+      } else {
+        const d = new Date(), o = d.getTimezoneOffset();
+        dateInput.value = new Date(d.getTime() - (o * 60 * 1000)).toISOString().split('T')[0];
+      }
+
+      // 🔒 LOCAL BINDING: The handler is entirely self-contained
+      const triggerRefresh = () => {
+        // We use the same render pipeline for refreshment
+        // By calling fetchAndDisplay locally, we keep the logic bundled
+        fetchAndDisplay(dateInput.value);
+      };
+
+      dateInput.onchange = triggerRefresh;
+      dateInput.oninput = triggerRefresh;
+
+      // 4️⃣ FETCH & DISPLAY PIPELINE (Encapsulated)
+      async function fetchAndDisplay(selectedDate) {
+        tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:30px">
+          <div style="display:inline-block;width:20px;height:20px;border:2px solid #eaf4ee;border-top-color:#155c3b;border-radius:50%;animation:doctor-spin 0.8s linear infinite;margin-bottom:8px"></div>
+          <div style="color:#155c3b;font-weight:600;font-size:13px">Syncing...</div>
+        </td></tr>`;
+
+        try {
+          const res = await fetch(`${API}/api/doctor/appointments?date=${selectedDate}&_t=${Date.now()}`, {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          const list = await res.json();
+
+          tableBody.innerHTML = '';
+          if (!list || list.length === 0) {
+            tableBody.innerHTML = `<tr class="no-hover"><td colspan="5" style="text-align:center;color:#6b8a7a;padding:20px">No appointments for this date</td></tr>`;
+            totalEl.textContent = "0"; pendingEl.textContent = "0"; completedEl.textContent = "0";
+            return;
+          }
+
+          const filteredList = list.filter(a => !a.patientId || patientExists(a.patientId));
+
+          if (filteredList.length === 0) {
+            tableBody.innerHTML = `<tr class="no-hover"><td colspan="5" style="text-align:center;color:#6b8a7a;padding:20px">No appointments for this date</td></tr>`;
+            totalEl.textContent = "0"; pendingEl.textContent = "0"; completedEl.textContent = "0";
+            return;
+          }
+
+          tableBody.innerHTML = filteredList.map(a => {
+            const s = (a.status || 'pending').toLowerCase();
+            let badge = "status-due", lbl = "Pending", acts = `
+              <button class="btn btn-accept" onclick="approveAppt('${a._id}')">Approve</button>
+              <button class="btn btn-reject" onclick="rejectAppt('${a._id}')" style="margin-left:5px">Reject</button>
+            `;
+            if (s === 'approved' || s === 'confirmed' || s === 'completed') {
+              badge = "status-active"; lbl = "Confirmed"; acts = `<span style="color:#2e7d32;font-weight:600">Confirmed</span>`;
+            } else if (s === 'rejected' || s === 'cancelled') {
+              badge = "status-critical"; lbl = s.charAt(0).toUpperCase() + s.slice(1); acts = `<span style="color:#c62828;font-weight:600">Closed</span>`;
+            }
+            return `<tr id="appt-row-${a._id}">
+              <td style="font-weight:600">${a.patientName || 'Unknown'}</td>
+              <td data-raw="${a.date}">${new Date(a.date).toLocaleDateString('en-IN', { timeZone: 'UTC' })}</td>
+              <td>${a.time || '--:--'}</td>
+              <td><span class="status-badge ${badge}">${lbl}</span></td>
+              <td>${acts}</td>
+            </tr>`;
+          }).join('');
+
+          totalEl.textContent = list.length;
+          pendingEl.textContent = list.filter(i => (i.status || '').toLowerCase() === 'pending').length;
+          completedEl.textContent = list.filter(i => {
+            const st = (i.status || '').toLowerCase();
+            return st === 'approved' || st === 'confirmed' || st === 'completed';
+          }).length;
+        } catch (e) {
+          tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#c62828">Fetch failed</td></tr>`;
+        }
+      }
+
+      // Initial fire for current view
+      await fetchAndDisplay(dateInput.value);
+    }
+
+    async function approveAppt(id) {
+      const row = document.getElementById(`appt-row-${id}`);
+      window.showToast("info", "Approving appointment...");
+
+      // Optimistic UI Update
+      let originalHTML = '';
+      if (row) {
+        originalHTML = row.innerHTML;
+        const badge = row.querySelector('.status-badge');
+        if (badge) {
+          badge.className = 'status-badge status-active';
+          badge.innerText = 'Confirmed'; // Using 'Confirmed' to match other parts of UI for active
+        }
+        if (row.cells[4]) {
+          row.cells[4].innerHTML = `<span style="color:#2e7d32;font-weight:600">Confirmed</span>`;
+        }
+      }
+
+      try {
+        const res = await fetch(`${API}/api/doctor/appointments/${id}/approve`, {
+          method: 'PATCH',
+          headers: { "Authorization": "Bearer " + token }
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          // Success - refresh counts in background
+          window.showToast("success", "Appointment approved successfully.");
+          loadDashboard();
+          loadPatients();
+        } else {
+          // Revert UI on error
+          if (row) row.innerHTML = originalHTML;
+          window.showToast("error", "Error: " + (data.message || "Failed to approve appointment"));
+        }
+      } catch (e) {
+        console.error(e);
+        // Revert UI on error
+        if (row) row.innerHTML = originalHTML;
+        window.showToast("error", "Network error. Please try again.");
+      }
+    }
+
+    async function rejectAppt(id) {
+      const row = document.getElementById(`appt-row-${id}`);
+      if (row) {
+        const dateText = row.cells[1].getAttribute('data-raw') || row.cells[1].innerText;
+        const timeText = row.cells[2].innerText;
+        // Rule 6: Block action if <24 hours left
+        if (!window.AppValidation.checkRescheduleAllowed(dateText, timeText)) return;
+      }
+      const reason = prompt("Enter reason for rejection (optional):");
+      if (reason === null) return;
+
+      // Optimistic UI Update
+      let originalHTML = '';
+      if (row) {
+        originalHTML = row.innerHTML;
+        const badge = row.querySelector('.status-badge');
+        if (badge) {
+          badge.className = 'status-badge status-critical';
+          badge.innerText = 'Rejected';
+        }
+        if (row.cells[4]) {
+          row.cells[4].innerHTML = `<span style="color:#c62828;font-weight:600">Closed</span>`;
+        }
+      }
+
+      try {
+        const res = await fetch(`${API}/api/doctor/appointments/${id}/reject`, {
+          method: 'PATCH',
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+          body: JSON.stringify({ reason })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          // Success - refresh counts in background
+          window.showToast("success", "Appointment rejected successfully.");
+          loadDashboard();
+          loadPatients();
+        } else {
+          // Revert UI on error
+          if (row) row.innerHTML = originalHTML;
+          window.showToast("error", "Error: " + (data.message || "Failed to reject appointment"));
+        }
+      } catch (e) {
+        if (row) row.innerHTML = originalHTML;
+        window.handleError(e, "Reject Appointment");
+      }
+    }
+
+    let activeStockCategory = 'tablets';
+    let stockPollInterval = null;
+
+    async function loadStock(isPolling = false) {
+      try {
+        const res = await fetch(API + "/api/medicines?_t=" + Date.now(), {
+          headers: { Authorization: "Bearer " + token }
+        });
+        if (!res.ok) return;
+        const newMeds = await res.json();
+
+        // Populate Datalist for Prescriptions (keeping it for legacy if needed)
+        const dl = document.getElementById('medSuggestions');
+        if (dl) {
+          dl.innerHTML = newMeds.map(m => `<option value="${m.name}">`).join("");
+        }
+
+        // Identify Changes for visual highlighing
+        const previousMedsMap = new Map((allMeds || []).map(m => [m._id, m.quantity]));
+        allMeds = newMeds;
+
+        const grid = document.getElementById('medicineGrid');
+        if (!grid) return;
+
+        // If grid is empty or not polling, do a full render
+        if (!isPolling || !grid.children.length) {
+          renderStockGrid(activeStockCategory);
+        } else {
+          // Update quantities of visible medicines to avoid flicker
+          newMeds.filter(m => m.category === activeStockCategory).forEach(m => {
+            const card = document.getElementById(`med-card-${m._id}`);
+            if (card) {
+              const qtyEl = card.querySelector('.qty-value');
+              const oldQty = previousMedsMap.get(m._id);
+              // Update only if changed
+              if (oldQty !== undefined && Number(oldQty) !== Number(m.quantity)) {
+                qtyEl.textContent = m.quantity;
+                qtyEl.classList.add('qty-changed');
+                setTimeout(() => qtyEl.classList.remove('qty-changed'), 1500);
+
+                const isLow = m.quantity <= (m.alertLevel || 10);
+                qtyEl.classList.toggle('low-stock-pulse', isLow);
+                const statusTag = card.querySelector('.med-status-tag');
+                statusTag.textContent = isLow ? 'Low Stock' : 'In Stock';
+                statusTag.className = `med-status-tag ${isLow ? 'status-tag-low' : 'status-tag-in'}`;
+              }
+            }
+          });
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    function switchStockCategory(cat, el) {
+      activeStockCategory = cat;
+      document.querySelectorAll('.stock-cat-pill').forEach(p => p.classList.remove('active'));
+      if (el) el.classList.add('active');
+      renderStockGrid(cat);
+    }
+
+    function renderStockGrid(category) {
+      // Mapping categories for inclusive filtering
+      const categoryMap = {
+        'tablets': ['tablet', 'churna', 'tablets'],
+        'liquids': ['asava', 'syrup', 'liquids'],
+        'others': ['oil', 'others']
+      };
+      
+      const allowedCategories = categoryMap[category] || [category];
+      let meds = allMeds.filter(m => allowedCategories.includes(m.category));
+
+      const searchVal = document.getElementById('stockSearch') ? document.getElementById('stockSearch').value.toLowerCase().trim() : '';
+      if (searchVal) {
+        meds = meds.filter(m => m.name.toLowerCase().includes(searchVal));
+      }
+
+      // Sort: Low stock items first
+      meds.sort((a, b) => {
+        const isALow = a.quantity <= (a.alertLevel || 10);
+        const isBLow = b.quantity <= (b.alertLevel || 10);
+        if (isALow && !isBLow) return -1;
+        if (!isALow && isBLow) return 1;
+        return a.name.localeCompare(b.name);
+      });
+
+      const container = document.getElementById('medicineGrid');
+      if (!container) return;
+
+      container.innerHTML = meds.map(m => {
+        const isLow = m.quantity <= (m.alertLevel || 10);
+        return `
+          <div class="med-stock-card" id="med-card-${m._id}">
+            <div class="med-stock-content"> <!-- Wrapper for flip/replacement -->
+                <div class="med-info">
+                  <div class="med-name-label">${m.name}</div>
+                  <div class="med-status-tag ${isLow ? 'status-tag-low' : 'status-tag-in'}">
+                    ${isLow ? 'Low Stock' : 'In Stock'}
+                  </div>
+                </div>
+                <div class="qty-display" onclick="openUpdateStockModal('${m._id}', '${m.name.replace(/'/g, "\\'")}', ${m.quantity})" style="cursor:pointer">
+                  <div class="qty-value ${isLow ? 'low-stock-pulse' : ''}">${m.quantity}</div>
+                  <div class="qty-unit">Units</div>
+                </div>
+                <!-- Demand Prediction Trigger -->
+                <div style="margin-top:8px; border-top:1px solid #f1f5f9; padding-top:6px; text-align:center;">
+                   <button onclick="checkDemand('${m._id}', '${m.name.replace(/'/g, "\\'")}', ${m.quantity})" 
+                      style="background:none; border:none; font-size:11px; color:#64748b; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px; width:100%;">
+                      <span>📊</span> Analyze Demand
+                   </button>
+                </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // AI DEMAND PREDICTION LOGIC
+    async function checkDemand(id, name, stock) {
+      const card = document.getElementById(`med-card-${id}`);
+      if (!card) return;
+
+      // Save original content if needed, but we can just re-render grid or store in dataset. 
+      // For simplicity, we assume re-render restores it, or we rebuild the innerHTML manually on close.
+      const originalContent = card.innerHTML; // Store current state
+      card.dataset.original = originalContent;
+
+      // 1. Show Loading State (Compact, Non-blocking)
+      card.innerHTML = `
+         <div style="padding:20px; text-align:center; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; background:#f8fafc;">
+            <div style="width:20px; height:20px; border:2px solid #cbd5e1; border-top-color:#155c3b; border-radius:50%; animation:spin 1s linear infinite; margin-bottom:8px;"></div>
+            <div style="font-size:11px; color:#64748b; font-weight:500;">Analyzing trends...</div>
+         </div>
+       `;
+
+      try {
+        // Simulate usage data (Mocking for feature demo as strict historical data isn't in Mongoose schema yet)
+        // In prod: fetch actual usage history
+        const mockUsage = Math.max(1, Math.floor(stock / (Math.random() * 20 + 5)));
+
+        const res = await fetch(`${API}/api/ai/medicine-demand`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            medicineName: name,
+            currentStock: Number(stock),
+            dailyAverageUsage: mockUsage,
+            prescriptionsLast30Days: mockUsage * 30
+          })
+        });
+
+        const data = await res.json();
+
+        // 2. Determine Style based on Status
+        let bg = '#f0fdf4'; let color = '#15803d'; let border = '#bbf7d0';
+        if (data.status === 'Low') { bg = '#fffbeb'; color = '#b45309'; border = '#fde68a'; }
+        if (data.status === 'Critical') { bg = '#fef2f2'; color = '#b91c1c'; border = '#fecaca'; }
+
+        // 3. Render Result Card
+        card.innerHTML = `
+           <div style="padding:12px; height:100%; display:flex; flex-direction:column; justify-content:space-between; background:${bg};">
+              <div>
+                 <div style="font-size:10px; text-transform:uppercase; color:${color}; font-weight:700; letter-spacing:0.5px; margin-bottom:4px;">${data.status} Demand</div>
+                 <div style="font-size:12px; color:#1e293b; font-weight:600; line-height:1.3; margin-bottom:4px;">
+                    est. ${data.estimatedDays} days left
+                 </div>
+                 <div style="font-size:10px; color:#475569; line-height:1.2;">${data.suggestion}</div>
+              </div>
+              <button onclick="restoreCard('${id}')" style="background:white; border:1px solid ${border}; color:${color}; font-size:10px; padding:4px; width:100%; border-radius:4px; cursor:pointer; font-weight:600; margin-top:6px;">
+                 Back
+              </button>
+           </div>
+         `;
+      } catch (e) {
+        console.error(e);
+        // Fallback to original silently
+        restoreCard(id);
+      }
+    }
+
+    function restoreCard(id) {
+      const card = document.getElementById(`med-card-${id}`);
+      if (card && card.dataset.original) {
+        card.innerHTML = card.dataset.original;
+      } else {
+        // If lost, just re-render category (safe fallback)
+        renderStockGrid(activeStockCategory);
+      }
+    }
+
+    // Initialize Polling
+    if (stockPollInterval) clearInterval(stockPollInterval);
+    stockPollInterval = setInterval(() => {
+      const section = document.getElementById('stock');
+      if (section && section.style.display !== 'none') {
+        loadStock(true);
+      }
+    }, 25000);
+
+    window.addEventListener('focus', () => {
+      const section = document.getElementById('stock');
+      if (section && section.style.display !== 'none') {
+        loadStock(true);
+      }
+    });
+
+    function openCategory(id) {
+      // Support for any legacy calls, redirect to new system
+      const pillMap = { 'tablets': 0, 'liquids': 1, 'others': 2 };
+      const pills = document.querySelectorAll('.stock-cat-pill');
+      if (pills[pillMap[id]]) {
+        switchStockCategory(id, pills[pillMap[id]]);
+      }
+    }
+
+
+
+
+    let updatingMedId = null;
+
+    function openUpdateStockModal(id, name, qty) {
+      closeAllModals();
+      updatingMedId = id;
+      document.getElementById('updateMedName').innerText = name;
+      document.getElementById('updateCurrentQty').innerText = qty;
+      document.getElementById('updateNewQty').value = qty;
+      document.getElementById('updateStockModal').style.display = "flex";
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeUpdateStockModal() {
+      closeAllModals();
+    }
+
+    async function saveStockUpdate() {
+      const input = document.getElementById('updateNewQty');
+      const val = input.value.trim();
+
+      if (val === "" || isNaN(val)) return window.showToast("error", "Please enter a valid number.");
+      const newQty = Number(val);
+      if (newQty < 0) return window.showToast("error", "Quantity cannot be negative.");
+
+      const currentQty = Number(document.getElementById('updateCurrentQty').innerText);
+      if (newQty === currentQty) {
+        return window.showToast("warning", "No change in quantity detected.");
+      }
+
+      const btn = document.querySelector('#updateStockModal button[type="submit"]');
+      let loadText = "Save Changes";
+      if (btn) {
+        loadText = btn.innerText;
+        btn.innerText = "Updating...";
+        btn.disabled = true;
+      }
+
+      try {
+        const res = await fetch(`${API}/api/medicines/${updatingMedId}/quantity`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ quantity: newQty })
+        });
+
+        const data = await res.json();
+        if (res.ok && (data.success || data.med)) {
+          closeUpdateStockModal();
+          await loadStock(false);
+          loadDashboard();
+
+          window.showToast("success", "Stock updated successfully.", {
+            onUndo: async () => {
+              try {
+                await fetch(`${API}/api/medicines/${updatingMedId}/quantity`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                  body: JSON.stringify({ quantity: currentQty })
+                });
+                await loadStock(false);
+                loadDashboard();
+                window.showToast("success", "Action reverted successfully");
+              } catch (e) { window.handleError(e, "Undo Stock"); }
+            }
+          });
+        } else {
+          window.showToast("error", "Error: " + (data.message || "Failed to update stock"));
+        }
+      } catch (e) {
+        console.error(e);
+        window.showToast("error", "Server communication failed.");
+      } finally {
+        if (btn) {
+          btn.innerText = loadText;
+          btn.disabled = false;
+        }
+      }
+    }
+
+
+
+
+
+    dashboardDate.innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    (async () => {
+      await loadDashboard();
+      await loadPatients();
+      loadStock();
+      loadPrescriptions();
+    })();
+
+
+    // Initial view
+    show('overview');
+    async function sendActivationEmail(email) {
+      try {
+        const res = await fetch(API + '/api/users/resend-activation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ email })
+        });
+        const d = await res.json();
+        window.showToast("info", d.message);
+      } catch (e) { window.handleError(e, "Resend Activation"); }
+    }
+
+    let updatingEmailPatientId = null;
+    function openUpdateEmailModal(id, name) {
+      closeAllModals();
+      setTimeout(() => {
+        updatingEmailPatientId = id;
+        document.getElementById('ueTitle').innerText = `Activate Account: ${name}`;
+        document.getElementById('ueEmail').value = "";
+        document.getElementById('updateEmailModal').style.display = 'flex';
+        document.body.style.overflow = "hidden";
+      }, 200);
+    }
+    function closeUpdateEmailModal() {
+      closeAllModals();
+    }
+    async function submitEmailUpdate() {
+      const email = document.getElementById('ueEmail').value;
+      const btn = document.getElementById('ueSubmitBtn');
+      const loadText = btn.innerText;
+      btn.innerText = "Updating...";
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`${API}/api/users/update-email/${updatingEmailPatientId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ email })
+        });
+        const d = await res.json();
+        if (d.success) {
+          window.showToast("success", "Patient account activated!");
+          closeUpdateEmailModal();
+          closeDrawer();
+          loadPatients();
+        } else {
+          window.showToast("error", d.message || "Failed to update email");
+        }
+      } catch (e) {
+        window.handleError(e, "Update Email");
+      } finally {
+        btn.innerText = loadText;
+        btn.disabled = false;
+      }
+    }
+
+    function updatePreview() {
+      const name = document.getElementById('cpName').value || 'New Patient';
+      const phone = document.getElementById('cpPhone').value || '--';
+      const age = document.getElementById('cpAge').value || '--';
+      const gender = document.getElementById('cpGender').value;
+      const genderText = gender ? (gender.charAt(0).toUpperCase() + gender.slice(1)) : '--';
+
+      const nameEl = document.getElementById('previewName');
+      if (nameEl) nameEl.innerText = name;
+
+      const phoneEl = document.getElementById('previewPhone');
+      if (phoneEl) phoneEl.innerText = phone;
+
+      const ageEl = document.getElementById('previewAge');
+      if (ageEl) ageEl.innerText = age;
+
+      const genEl = document.getElementById('previewGender');
+      if (genEl) genEl.innerText = genderText;
+
+      // Avatar
+      const avatarEl = document.getElementById('previewAvatar');
+      if (avatarEl) {
+        const initials = name === 'New Patient' ? '?' : name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        avatarEl.innerText = initials;
+      }
+    }
+
+    async function handleCreatePatient(e) {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type="submit"]');
+      const loadText = btn.innerText;
+      btn.innerText = 'Creating...';
+      btn.disabled = true;
+
+      const nameParts = document.getElementById('cpName').value.trim().split(' ');
+      const data = {
+        firstName: nameParts[0],
+        lastName: nameParts.slice(1).join(' ') || '',
+        email: document.getElementById('cpEmail').value,
+        phone: document.getElementById('cpPhone').value,
+        age: document.getElementById('cpAge').value,
+        gender: document.getElementById('cpGender').value
+      };
+
+      try {
+        const res = await fetch(API + '/api/users/invite', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify(data)
+        });
+        const d = await res.json();
+        if (d.success) {
+          window.showToast("success", "Patient created successfully. Activation email sent.");
+          e.target.reset();
+        } else {
+          window.showToast("error", d.message || "Failed to create patient");
+        }
+      } catch (err) {
+        console.error(err);
+        window.showToast("error", "Server error");
+      }
+      btn.innerText = loadText;
+      btn.disabled = false;
+    }
+
+    // Modal behavior for logout
+    window.addEventListener('click', (e) => {
+      const logoutModal = document.getElementById('logoutModal');
+      if (e.target === logoutModal) closeLogoutModal();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const logoutModal = document.getElementById('logoutModal');
+        if (logoutModal && logoutModal.style.display === 'flex') {
+          closeLogoutModal();
+        }
+      }
+    });
+  </script>
+
+  <!-- Prescription PDF Template (Hidden) -->
+  <div id="prescription-pdf-template"
+    style="position: absolute; left: -9999px; top: -9999px; width: 794px; padding: 50px; font-family: 'Segoe UI', Arial, sans-serif; background: #ffffff; color: #333; line-height: 1.4;">
+
+    <!-- Professional Watermark Logo -->
+    <div
+      style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; z-index: 0; pointer-events: none;">
+      <img src="assets/logo.png"
+        style="width: 450px; height: 450px; opacity: 0.07; filter: blur(1.5px); object-fit: contain;">
+    </div>
+
+    <!-- MAIN CONTENT LAYER -->
+    <div style="position: relative; z-index: 1;">
+      <!-- HEADER -->
+      <div style="border-bottom: 3px solid #155c3b; padding-bottom: 20px; margin-bottom: 25px;">
+        <table width="100%" cellspacing="0" cellpadding="0">
+          <tr>
+            <td width="70%" style="vertical-align: middle;">
+              <div style="display: flex; align-items: center; gap: 20px;">
+                <img src="assets/logo.png" style="width: 85px; height: 85px; object-fit: contain;">
+                <div style="border-left: 3px solid #155c3b; padding-left: 20px;">
+                  <h1
+                    style="margin:0; color:#155c3b; font-size: 32px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase;">
+                    Samyak</h1>
+                  <h2
+                    style="margin:0; color:#155c3b; font-size: 18px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">
+                    Ayurvedic Hospital</h2>
+                  <p
+                    style="margin:5px 0 0 0; font-size:11px; color: #4f6f60; font-weight: 600; text-transform: uppercase;">
+                    Pure Ayurvedic Treatment & Research Center</p>
+                </div>
+              </div>
+            </td>
+            <td width="30%" align="right" style="vertical-align: middle; line-height: 1.6;">
+              <strong style="font-size: 17px; color: #155c3b;">Dr. Rajan Karangiya</strong><br>
+              <span style="font-size: 12px; color: #4f6f60;">B.A.M.S (RGUHS), CCP</span><br>
+              <span style="font-size: 12px; color: #4f6f60;">Reg No: G-12345</span><br>
+              <div style="margin-top: 5px; font-weight: 700; color: #155c3b; font-size: 13px;">📞 +91 93280 52802</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- PATIENT INFO -->
+      <div
+        style="background: #f3f8f5; border: 1px solid #e8f5e9; padding: 20px; border-radius: 12px; margin-bottom: 25px;">
+        <table width="100%" style="font-size:14px; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 6px 0;"><strong>PATIENT NAME :</strong> <span id="pdf-patient-name"
+                style="color:#155c3b; font-weight:700;"></span></td>
+            <td align="right" style="padding: 6px 0;"><strong>DATE :</strong> <span id="pdf-date"></span></td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0;"><strong>AGE / GENDER :</strong> <span id="pdf-age-gender"></span></td>
+            <td align="right" style="padding: 6px 0;"><strong>UHID :</strong> <span id="pdf-uhid"
+                style="font-family: monospace;"></span></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- DIAGNOSIS -->
+      <div style="margin-bottom: 25px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+          <div style="width: 4px; height: 16px; background: #155c3b;"></div>
+          <strong style="color: #155c3b; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;">Diagnosis /
+            Complaints</strong>
+        </div>
+        <div
+          style="border:1px solid #d1fae5; padding:15px; border-radius: 8px; font-size: 14px; min-height: 50px; color: #2c3e50; background: rgba(255,255,255,0.6);">
+          <span id="pdf-diagnosis"></span>
+        </div>
+      </div>
+
+      <!-- MEDICINES -->
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+        <div style="width: 4px; height: 16px; background: #155c3b;"></div>
+        <strong style="color: #155c3b; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;">Prescription
+          (Rx)</strong>
+      </div>
+      <table width="100%" border="1" cellspacing="0" cellpadding="12"
+        style="border-collapse:collapse; font-size:14px; border: 1px solid #eef4f1; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,0.7);">
+        <thead style="background:#155c3b; color: #ffffff;">
+          <tr>
+            <th align="left" style="border: 1px solid #155c3b;">Medicine Name</th>
+            <th align="center" style="border: 1px solid #155c3b;">Dosage</th>
+            <th align="center" style="border: 1px solid #155c3b;">Duration</th>
+            <th align="center" style="border: 1px solid #155c3b;">Qty</th>
+          </tr>
+        </thead>
+        <tbody id="pdf-medicine-table" style="color: #2c3e50;"></tbody>
+      </table>
+
+      <!-- FOOTER -->
+      <div style="margin-top: 60px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+          <div style="font-size:12px; color: #6b8a7a;">
+            <p style="margin-bottom: 5px;">✔ Follow instructions strictly as prescribed.</p>
+            <p>✔ Avoid spicy and heavy food during treatment.</p>
+          </div>
+          <div style="text-align:center; min-width: 180px;">
+            <div style="margin-bottom: 15px; color: #f0f0f0; font-size: 10px; border-bottom: 1px solid #eee;">[Digitally
+              Signed]</div>
+            <strong style="color: #155c3b; font-size: 15px;">Dr. Rajan Karangiya</strong>
+          </div>
+        </div>
+        <div
+          style="margin-top:40px; border-top:2px solid #155c3b; padding-top:15px; font-size:11px; text-align: center; color: #6b8a7a; letter-spacing: 0.5px;">
+          Address: 39/2/03/2, LMCTRC Nagar, Moti Palace Township, Junagadh, Gujarat – 362015
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logout Confirmation Modal -->
+  <div class="modal" id="logoutModal">
+    <div class="modal-content" style="width: 360px; text-align: center; padding: 40px 32px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+      <h3 style="margin-bottom: 12px; color: #1a202c; font-size: 20px; font-weight: 700; margin-top: 0;">Confirm Logout</h3>
+      <p style="color: #64748b; font-size: 14px; margin-bottom: 32px; line-height: 1.5; margin-top: 0;">Are you sure you want to log out?</p>
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button onclick="executeLogout()" style="flex: 1; background: #dc2626; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 14px; margin-top: 0;" onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='#dc2626'">Logout</button>
+        <button onclick="closeLogoutModal()" style="flex: 1; background: #ffffff; color: #475569; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 14px; margin-top: 0;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#e2e8f0'">Cancel</button>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

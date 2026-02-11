@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="js/toast.js" defer></script>
+    <script src="js/validation.js" defer></script>
+    <title>Activate Account | Samyak Ayurvedic Hospital</title>
+    <link rel="stylesheet" href="styles/tokens.css">
+    <style>
+        /* CSS Variables for Theme System to match existing */
+        :root {
+            --bg-main: rgba(255, 255, 255, 0.82);
+            --bg-body: url("assets/hero.jpg") center/cover no-repeat fixed;
+            --bg-card: #fff;
+            --bg-input: #fff;
+            --bg-primary: #155c3b;
+            --bg-primary-hover: #0d462b;
+            --text-primary: #155c3b;
+            --text-secondary: #4f6f60;
+            --text-dark: #2c3e50;
+            --border-subtle: #ddd;
+            --shadow-card: 0 22px 46px rgba(0, 0, 0, 0.2);
+        }
+
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg-body);
+            transition: background-color 0.3s ease;
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-main);
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            width: 420px;
+            background: var(--bg-card);
+            border-radius: 22px;
+            padding: 36px;
+            box-shadow: var(--shadow-card);
+            animation: fadeIn .4s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        .back {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 18px;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .logo {
+            width: 46px;
+            display: block;
+            margin: 0 auto 10px;
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        p {
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 22px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 30px;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-input);
+            color: var(--text-dark);
+            margin-bottom: 14px;
+            font-size: 14px;
+        }
+
+        button.primary {
+            width: 100%;
+            padding: 13px;
+            border-radius: 30px;
+            border: none;
+            background: var(--bg-primary);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .3s;
+        }
+
+        button.primary:hover {
+            background: var(--bg-primary-hover);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="overlay"></div>
+
+
+
+    <div class="container">
+        <div class="card">
+            <a href="login.html" class="back">← Back to Login</a>
+            <img src="assets/logo.png" class="logo" alt="Logo">
+            <h2 id="pageTitle">Activate Account</h2>
+            <p id="pageDesc">Verify your email to set your password</p>
+
+            <form id="activateForm">
+                <!-- Step 1: Email + OTP Request -->
+                <div id="emailSection">
+                    <label style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;margin-left:14px;display:block">Email Address</label>
+                    <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:18px">
+                        <div style="flex:1">
+                            <input type="email" id="email" placeholder="Enter your registered email" required style="margin-bottom:0">
+                        </div>
+                        <button type="button" id="sendOtpBtn" style="width:110px;height:45px;flex-shrink:0;font-size:13px;border-radius:30px;background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border-subtle);cursor:pointer;font-weight:600;transition:0.2s">Send OTP</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: OTP Verification -->
+                <div id="otpSection" style="display:none;animation:fadeIn 0.3s">
+                    <label style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;margin-left:14px;display:block">Verification Code</label>
+                    <input type="text" id="otp" placeholder="Enter 6-digit OTP" maxlength="6" style="text-align:center;letter-spacing:4px;font-weight:bold">
+                    <button class="primary" type="button" id="verifyOtpBtn" style="margin-bottom:20px">Verify OTP</button>
+                </div>
+
+                <!-- Step 3: Password Set -->
+                <div id="passwordSection" style="display:none;animation:fadeIn 0.3s">
+                    <label style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;margin-left:14px;display:block">Security</label>
+                    <input type="password" id="password" placeholder="New Password" required>
+                    <input type="password" id="confirm" placeholder="Confirm Password" required>
+                    <button class="primary" type="submit" style="margin-top:10px">Set Password & Activate</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API = "http://localhost:5001";
+        const params = new URLSearchParams(location.search);
+        const token = params.get('token');
+        const urlEmail = params.get('email');
+
+        const el = {
+            email: document.getElementById('email'),
+            otp: document.getElementById('otp'),
+            pass: document.getElementById('password'),
+            conf: document.getElementById('confirm'),
+            emailSec: document.getElementById('emailSection'),
+            otpSec: document.getElementById('otpSection'),
+            passSec: document.getElementById('passwordSection'),
+            sendOtpBtn: document.getElementById('sendOtpBtn'),
+            verifyOtpBtn: document.getElementById('verifyOtpBtn'),
+            form: document.getElementById('activateForm'),
+            title: document.getElementById('pageTitle'),
+            desc: document.getElementById('pageDesc')
+        };
+
+        if (urlEmail) el.email.value = urlEmail;
+
+        // Auto-verify token if present
+        async function checkToken() {
+            if (!token) return;
+            try {
+                const res = await fetch(`${API}/api/users/verify-activation?token=${token}`);
+                const d = await res.json();
+                if (d.success) {
+                    el.email.value = d.email;
+                    el.email.readOnly = true;
+                    el.sendOtpBtn.innerText = "Verified link ✓";
+                    el.sendOtpBtn.disabled = true;
+                    // Keep email section visible but show OTP immediately
+                    el.otpSec.style.display = 'block';
+                    el.title.innerText = "Verify OTP";
+                    el.desc.innerText = "Check your email for the code";
+                } else {
+                    window.showToast("error", d.message);
+                    if (d.alreadyActive) setTimeout(() => location.href = 'login.html', 2000);
+                }
+            } catch (e) { window.handleError(e, "Link Verification"); }
+        }
+        checkToken();
+
+        // Send OTP
+        el.sendOtpBtn.addEventListener('click', async () => {
+            if (!el.email.value) return window.showToast("error", "Email required");
+            el.sendOtpBtn.innerText = "Sending...";
+            el.sendOtpBtn.disabled = true;
+
+            try {
+                const res = await fetch(`${API}/api/users/send-activation-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: el.email.value })
+                });
+                const d = await res.json();
+                if (d.success) {
+                    window.showToast("success", d.message);
+                    el.otpSec.style.display = 'block';
+                    el.email.readOnly = true;
+                    el.sendOtpBtn.innerText = "Sent ✓";
+                } else {
+                    window.showToast("error", d.message);
+                    el.sendOtpBtn.innerText = "Send OTP";
+                    el.sendOtpBtn.disabled = false;
+                }
+            } catch (e) {
+                window.handleError(e, "Send OTP");
+                el.sendOtpBtn.innerText = "Retry";
+                el.sendOtpBtn.disabled = false;
+            }
+        });
+
+        // Verify OTP
+        el.verifyOtpBtn.addEventListener('click', async () => {
+            if (!el.otp.value) return window.showToast("error", "Enter 6-digit code");
+            try {
+                const res = await fetch(`${API}/api/users/verify-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: el.email.value, token, otp: el.otp.value })
+                });
+                const d = await res.json();
+                if (d.success) {
+                    window.showToast("success", d.message);
+                    el.otpSec.style.display = 'none';
+                    el.emailSec.style.display = 'none';
+                    el.passSec.style.display = 'block';
+                    el.title.innerText = "Set Password";
+                    el.desc.innerText = "Create a strong password for your account";
+                } else {
+                    window.showToast("error", d.message);
+                }
+            } catch (e) { window.handleError(e, "OTP Verify"); }
+        });
+
+        // Set Password
+        el.form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (el.pass.value !== el.conf.value) return window.showToast("error", "Passwords do not match");
+            
+            try {
+                const res = await fetch(`${API}/api/users/set-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: el.email.value, token, password: el.pass.value })
+                });
+                const d = await res.json();
+                if (d.success) {
+                    window.showToast("success", d.message);
+                    setTimeout(() => location.href = 'login.html', 1500);
+                } else {
+                    window.showToast("error", d.message);
+                }
+            } catch (e) { window.handleError(e, "Finalize Activation"); }
+        });
+    </script>
+</body>
+
+</html>
