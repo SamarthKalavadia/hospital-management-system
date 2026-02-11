@@ -8,7 +8,7 @@ document.getElementById("registerForm")?.addEventListener("submit", async (e) =>
   const phone = document.getElementById("phone").value;
   const password = document.getElementById("password")?.value || null;
 
-  const res = await fetch("http://localhost:5001/api/users/register", {
+  const res = await fetch("https://hospital-management-system-production-06ba.up.railway.app/api/users/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ firstName, lastName, email, phone, password })

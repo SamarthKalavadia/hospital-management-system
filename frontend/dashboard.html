@@ -139,7 +139,7 @@
 
     /* ================= FETCH DASHBOARD DATA ================= */
 
-    fetch(`http://localhost:5001/api/dashboard/${user.role}/${user.id}`, {
+    fetch(`https://hospital-management-system-production-06ba.up.railway.app/api/dashboard/${user.role}/${user.id}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
