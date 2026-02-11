@@ -621,19 +621,22 @@ router.put("/update-email/:id", auth, async (req, res) => {
 
     await user.save();
 
-    // Send invitation email
-    try {
-      const sendActivation = require('../utils/sendActivation');
-      await sendActivation(email, token, req.headers.host);
-    } catch (e) {
-       console.error("Failed to send activation email after update:", e);
-    }
-
+    // 1. Send immediate success response
     res.json({ 
       success: true, 
-      message: "Patient email updated and invitation sent",
+      message: "Patient email updated. Invitation is being sent.",
       user: { id: user._id, email: user.email }
     });
+
+    // 2. Send invitation email in background (non-blocking)
+    (async () => {
+      try {
+        const sendActivation = require('../utils/sendActivation');
+        await sendActivation(email, token, req.headers.host);
+      } catch (e) {
+        console.error(`[BG_TASK_ERROR] Failed to send activation email to ${email}:`, e);
+      }
+    })();
 
   } catch (e) {
     console.error(e);
@@ -658,10 +661,18 @@ router.post("/resend-activation", auth, async (req, res) => {
     user.activationTokenExpiry = Date.now() + 24 * 3600 * 1000;
     await user.save();
 
-    const sendActivation = require('../utils/sendActivation');
-    await sendActivation(email, token, req.headers.host);
+    // 1. Send immediate success response
+    res.json({ success: true, message: "Activation email is being resent" });
 
-    res.json({ success: true, message: "Activation email resent" });
+    // 2. Send activation email in background (non-blocking)
+    (async () => {
+      try {
+        const sendActivation = require('../utils/sendActivation');
+        await sendActivation(email, token, req.headers.host);
+      } catch (e) {
+        console.error(`[BG_TASK_ERROR] Failed to resend activation email to ${email}:`, e);
+      }
+    })();
   } catch (e) {
     console.error(e);
     res.status(500).json({ success: false, message: "Server error" });
@@ -684,10 +695,18 @@ router.post("/send-activation-otp", async (req, res) => {
     user.otpExpiry = Date.now() + 10 * 60 * 1000;
     await user.save();
 
-    const sendOtp = require("../utils/sendOtp");
-    await sendOtp(email, otp);
+    // 1. Send immediate success response
+    res.json({ success: true, message: "OTP is being sent to your email." });
 
-    res.json({ success: true, message: "OTP sent to email." });
+    // 2. Send OTP email in background (non-blocking)
+    (async () => {
+      try {
+        const sendOtp = require("../utils/sendOtp");
+        await sendOtp(email, otp);
+      } catch (e) {
+        console.error(`[BG_TASK_ERROR] Failed to send activation OTP to ${email}:`, e);
+      }
+    })();
   } catch (e) {
     console.error(e);
     res.status(500).json({ success: false, message: "Server error" });
@@ -834,10 +853,18 @@ router.post("/profile/request-otp", auth, async (req, res) => {
     user.otpExpiry = Date.now() + 10 * 60 * 1000; // 10 mins
     await user.save();
 
-    const sendOtp = require("../utils/sendOtp");
-    await sendOtp(user.email, otp);
+    // 1. Send immediate success response
+    res.json({ success: true, message: "OTP is being sent to your email" });
 
-    res.json({ success: true, message: "OTP sent to your email" });
+    // 2. Send OTP email in background (non-blocking)
+    (async () => {
+      try {
+        const sendOtp = require("../utils/sendOtp");
+        await sendOtp(user.email, otp);
+      } catch (e) {
+        console.error(`[BG_TASK_ERROR] Failed to send profile OTP to ${user.email}:`, e);
+      }
+    })();
   } catch (e) {
     console.error(e);
     res.status(500).json({ success: false, message: "Server error" });
@@ -899,15 +926,18 @@ router.post("/forgot-password", async (req, res) => {
     user.otpExpiry = Date.now() + 10 * 60 * 1000; // 10 mins
     await user.save();
 
-    try {
-      const sendOtp = require("../utils/sendOtp");
-      await sendOtp(user.email, otp);
-    } catch (e) {
-      console.error(e);
-      return res.json({ success: false, message: "Failed to send email" });
-    }
+    // 1. Send immediate success response
+    res.json({ success: true, message: "OTP is being sent to your email" });
 
-    res.json({ success: true, message: "OTP sent" });
+    // 2. Send OTP email in background (non-blocking)
+    (async () => {
+      try {
+        const sendOtp = require("../utils/sendOtp");
+        await sendOtp(user.email, otp);
+      } catch (e) {
+        console.error(`[BG_TASK_ERROR] Failed to send forgot-password OTP to ${user.email}:`, e);
+      }
+    })();
   } catch (e) {
     console.error(e);
     res.status(500).json({ success: false, message: "Server error" });

@@ -76,10 +76,18 @@ router.post("/send-otp", async (req, res) => {
     user.otpExpiry = Date.now() + 10 * 60 * 1000;
     await user.save();
 
-    const sendOtp = require("../utils/sendOtp");
-    await sendOtp(email, otp);
+    // 1. Send immediate success response
+    res.json({ success: true, message: "OTP is being sent to your email" });
 
-    res.json({ success: true, message: "OTP sent successfully" });
+    // 2. Send OTP email in background (non-blocking)
+    (async () => {
+      try {
+        const sendOtp = require("../utils/sendOtp");
+        await sendOtp(email, otp);
+      } catch (e) {
+        console.error(`[BG_TASK_ERROR] Failed to send Google auth OTP to ${email}:`, e);
+      }
+    })();
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: "Server error" });

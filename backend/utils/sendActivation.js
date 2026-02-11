@@ -1,14 +1,14 @@
-const nodemailer = require("nodemailer");
 const transporter = require("./email");
 
 module.exports = async (email, token, host) => {
-  // Construct activation link (Assuming standard Live Server port 5500 or similar)
-  // Adjust path based on where frontend files are served
+  console.log(`📧 [sendActivation] Starting activation email send to: ${email}`);
+  
+  // Construct activation link using FRONTEND_URL environment variable
   const baseUrl = process.env.FRONTEND_URL;
   const link = `${baseUrl}/activate.html?token=${token}&email=${email}`;
 
   try {
-    await transporter.sendMail({
+    await transporter.sendMailWithLog({
       from: `"Samyak Hospital" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Activate Your Patient Account",
@@ -21,8 +21,9 @@ module.exports = async (email, token, host) => {
         <p style="margin-top:20px;font-size:12px;color:#666;">This link expires in 24 hours.</p>
       `
     });
-    console.log("Activation email sent to " + email);
-  } catch (e) {
-    console.error("Email send failed", e);
+    console.log(`✅ [sendActivation] Activation email sent successfully to: ${email}`);
+  } catch (error) {
+    console.error(`❌ [sendActivation] Failed to send activation email to ${email}:`, error.message);
+    throw error;
   }
 };

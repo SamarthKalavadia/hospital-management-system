@@ -1,16 +1,7 @@
 const cron = require("node-cron");
-const nodemailer = require("nodemailer");
+const transporter = require("../utils/email");
 const Appointment = require("../models/Appointment");
 const User = require("../models/User");
-
-// Configure transporter
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
 
 // Run every 30 minutes
 // Cron format: minute hour day month day-of-week

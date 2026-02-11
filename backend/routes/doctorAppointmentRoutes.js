@@ -3,16 +3,7 @@ const router = express.Router();
 const Appointment = require("../models/Appointment");
 const User = require("../models/User");
 const auth = require("../middleware/auth");
-const nodemailer = require("nodemailer");
-
-// Email Transporter
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+const transporter = require("../utils/email");
 
 // 1️⃣ Doctor: Fetch Appointments
 // GET /api/doctor/appointments?date=YYYY-MM-DD
@@ -178,11 +169,18 @@ router.patch("/:id/approve", auth, async (req, res) => {
     appt.approvedByDoctorAt = new Date();
     await appt.save();
 
-    // 📩 Send Email Notification (Async-safe)
-    const user = await User.findById(appt.patientId);
-    if (user && user.email) {
-      const emailSubject = "Appointment Approved – Samyak Ayurvedic Hospital";
-      const emailHtml = `
+    res.json({
+      success: true,
+      appointment: appt
+    });
+
+    // 📩 Send Email Notification (Non-blocking background task)
+    (async () => {
+      try {
+        const user = await User.findById(appt.patientId);
+        if (user && user.email) {
+          const emailSubject = "Appointment Approved – Samyak Ayurvedic Hospital";
+          const emailHtml = `
             <div style="font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width:600px; margin:auto; border:1px solid #e0e0e0; border-radius:12px; overflow:hidden">
               <div style="background:#155c3b; padding:24px; text-align:center">
                 <h2 style="color:#ffffff; margin:0">Appointment Approved</h2>
@@ -204,38 +202,25 @@ router.patch("/:id/approve", auth, async (req, res) => {
               </div>
             </div>`;
 
-      // Email to Patient (async-safe)
-      try {
-        await transporter.sendMail({
-          from: `Samyak Ayurvedic Hospital <${process.env.EMAIL_USER}>`,
-          to: user.email,
-          subject: emailSubject,
-          html: emailHtml
-        });
-        console.log("Approval email sent to patient:", user.email);
-      } catch (emailErr) {
-        console.error("Patient Email Error:", emailErr);
-      }
+          // Use shared utility for logging and delivery reliability
+          await transporter.sendMailWithLog({
+            to: user.email,
+            subject: emailSubject,
+            html: emailHtml
+          });
 
-      // Email to Doctor (confirmation copy - async-safe)
-      const doctorEmail = process.env.DOCTOR_EMAIL || process.env.EMAIL_USER;
-      try {
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
-          to: doctorEmail,
-          subject: `[DOCTOR COPY] ${emailSubject}`,
-          html: `<p>FYI: You have approved an appointment for <strong>${appt.patientName || user.firstName || 'Patient'}</strong>.</p><br>${emailHtml}`
-        });
-        console.log("Approval copy sent to doctor");
-      } catch (emailErr) {
-        console.error("Doctor Email Error:", emailErr);
+          // Email to Doctor (confirmation copy)
+          const doctorEmail = process.env.DOCTOR_EMAIL || process.env.EMAIL_USER;
+          await transporter.sendMailWithLog({
+            to: doctorEmail,
+            subject: `[DOCTOR COPY] ${emailSubject}`,
+            html: `<p>FYI: You have approved an appointment for <strong>${appt.patientName || user.firstName || 'Patient'}</strong>.</p><br>${emailHtml}`
+          });
+        }
+      } catch (bgErr) {
+        console.error("[BG_TASK_ERROR] Appointment approval notification failed:", bgErr.message);
       }
-    }
-
-    res.json({
-      success: true,
-      appointment: appt
-    });
+    })();
   } catch (err) {
     console.error(err);
     res.status(500).json({
@@ -270,11 +255,18 @@ router.patch("/:id/reject", auth, async (req, res) => {
     if (reason) appt.reason = reason;
     await appt.save();
 
-    // 📩 Send Email Notification (Async-safe)
-    const user = await User.findById(appt.patientId);
-    if (user && user.email) {
-      const emailSubject = "Appointment Rejected – Samyak Ayurvedic Hospital";
-      const emailHtml = `
+    res.json({
+      success: true,
+      appointment: appt
+    });
+
+    // 📩 Send Email Notification (Non-blocking background task)
+    (async () => {
+      try {
+        const user = await User.findById(appt.patientId);
+        if (user && user.email) {
+          const emailSubject = "Appointment Rejected – Samyak Ayurvedic Hospital";
+          const emailHtml = `
             <div style="font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width:600px; margin:auto; border:1px solid #e0e0e0; border-radius:12px; overflow:hidden">
               <div style="background:#b71c1c; padding:24px; text-align:center">
                 <h2 style="color:#ffffff; margin:0">Appointment Rejected</h2>
@@ -299,38 +291,25 @@ router.patch("/:id/reject", auth, async (req, res) => {
               </div>
             </div>`;
 
-      // Email to Patient (async-safe)
-      try {
-        await transporter.sendMail({
-          from: `Samyak Ayurvedic Hospital <${process.env.EMAIL_USER}>`,
-          to: user.email,
-          subject: emailSubject,
-          html: emailHtml
-        });
-        console.log("Rejection email sent to patient:", user.email);
-      } catch (emailErr) {
-        console.error("Patient Email Error:", emailErr);
-      }
+          // Use shared utility for logging and delivery reliability
+          await transporter.sendMailWithLog({
+            to: user.email,
+            subject: emailSubject,
+            html: emailHtml
+          });
 
-      // Email to Doctor (confirmation copy - async-safe)
-      const doctorEmail = process.env.DOCTOR_EMAIL || process.env.EMAIL_USER;
-      try {
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
-          to: doctorEmail,
-          subject: `[DOCTOR COPY] ${emailSubject}`,
-          html: `<p>FYI: You have rejected an appointment for <strong>${appt.patientName || user.firstName || 'Patient'}</strong>.</p><br>${emailHtml}`
-        });
-        console.log("Rejection copy sent to doctor");
-      } catch (emailErr) {
-        console.error("Doctor Email Error:", emailErr);
+          // Email to Doctor (confirmation copy)
+          const doctorEmail = process.env.DOCTOR_EMAIL || process.env.EMAIL_USER;
+          await transporter.sendMailWithLog({
+            to: doctorEmail,
+            subject: `[DOCTOR COPY] ${emailSubject}`,
+            html: `<p>FYI: You have rejected an appointment for <strong>${appt.patientName || user.firstName || 'Patient'}</strong>.</p><br>${emailHtml}`
+          });
+        }
+      } catch (bgErr) {
+        console.error("[BG_TASK_ERROR] Appointment rejection notification failed:", bgErr.message);
       }
-    }
-
-    res.json({
-      success: true,
-      appointment: appt
-    });
+    })();
   } catch (err) {
     console.error(err);
     res.status(500).json({

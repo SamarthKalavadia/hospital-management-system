@@ -5,16 +5,7 @@ const User = require("../models/User");
 const auth = require("../middleware/auth");
 const jwt = require("jsonwebtoken");
 
-// Email Configuration
-const nodemailer = require("nodemailer");
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const transporter = require("../utils/email");
 
 // GET /api/appointments/slots?date=YYYY-MM-DD - Get booked slots for a date
 // GET /api/appointments/slots?date=YYYY-MM-DD
@@ -207,140 +198,111 @@ router.post("/", auth, async (req, res) => {
 
     await newAppt.save();
 
-    // ------------------------------------------
-    // SEND CONFIRMATION EMAIL (Silent Failure)
-    // ------------------------------------------
-    if (targetUser.email) {
-      const statusMessage = appointmentStatus === 'Approved' ?
-        'Your appointment has been scheduled and approved by the doctor.' :
-        'Your appointment has been successfully booked and is awaiting approval.';
-
-      const emailSubject = appointmentStatus === 'Approved' ?
-        'Appointment Scheduled – Samyak Ayurvedic Hospital' :
-        'Appointment Confirmation – Samyak Ayurvedic Hospital';
-
-      const mailOptions = {
-        from: `"Samyak Ayurvedic Hospital" <${process.env.EMAIL_USER}>`,
-        to: targetUser.email,
-        subject: emailSubject,
-        html: `
-          <div style="font-family: 'Segoe UI', sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
-            
-            <div style="background-color: #155c3b; color: #fff; padding: 20px; text-align: center;">
-              <h2 style="margin: 0; font-size: 24px;">Appointment ${appointmentStatus === 'Approved' ? 'Scheduled' : 'Confirmation'}</h2>
-            </div>
-            
-            <div style="padding: 30px;">
-              <p style="font-size: 16px; margin: 0 0 20px 0;">Dear <strong>${targetUser.firstName || 'Patient'}</strong>,</p>
-              
-              <p style="font-size: 16px; margin: 0 0 25px 0; line-height: 1.5;">${statusMessage}</p>
-              
-              <div style="background-color: #f9fbf9; border: 1px solid #e0e0e0; padding: 20px; margin-bottom: 25px; border-radius: 8px;">
-                <h3 style="margin: 0 0 15px 0; color: #155c3b; font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 8px;">Appointment Details</h3>
-                <div style="font-size: 15px;">
-                  <p style="margin: 8px 0;"><strong>Date:</strong> ${new Date(date).toLocaleDateString()}</p>
-                  <p style="margin: 8px 0;"><strong>Time:</strong> ${formattedTime}</p>
-                  <p style="margin: 8px 0;"><strong>Status:</strong> ${appointmentStatus}</p>
-                </div>
-              </div>
-
-              <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
-                <p style="font-size: 15px; color: #333; margin: 0 0 10px 0;">Our team will contact you if any changes are required.</p>
-                <p style="font-size: 15px; margin: 0 0 5px 0;">Wishing you good health,</p>
-                <p style="font-size: 16px; font-weight: bold; color: #155c3b; margin: 0 0 20px 0;">Samyak Ayurvedic Hospital</p>
-                
-                <div style="font-size: 13px; color: #666; bg-color: #f5f5f5; padding: 15px; border-radius: 6px;">
-                  39/2/03/2, Lmctrc Nagar,<br>
-                  Moti Palace Township,<br>
-                  Junagadh, Gujarat 362015
-                </div>
-              </div>
-            </div>
-          </div>
-        `
-      };
-
-      // Send asynchronously - do not await
-      transporter.sendMail(mailOptions, (err, info) => {
-        if (err) console.error("Patient Email Failed:", err.message);
-        else console.log("Confirmation Email Sent:", info.response);
-      });
-    }
-
-    // ------------------------------------------
-    // ALERT DOCTOR (Interactive Email Notification)
-    // ------------------------------------------
-    const leadDoctor = await User.findOne({
-      role: 'doctor'
+    // Send immediate response
+    res.json({
+      success: true,
+      message: "Appointment booked successfully",
+      appointment: newAppt
     });
-    const doctorEmail = process.env.DOCTOR_EMAIL || leadDoctor?.email || process.env.EMAIL_USER;
 
-    if (appointmentStatus === 'Pending' && doctorEmail) {
-      // Generate a Secure Token for this specific action
-      const actionToken = jwt.sign({
-          appointmentId: newAppt._id,
-          doctorId: leadDoctor?._id || "000",
-          action: "process"
-        },
-        process.env.JWT_SECRET, {
-          expiresIn: "7d"
-        }
-      );
+    // ------------------------------------------
+    // SEND EMAILS AS BACKGROUND TASKS
+    // ------------------------------------------
+    (async () => {
+      try {
+        // 1. Patient Confirmation
+        if (targetUser.email) {
+          const statusMessage = appointmentStatus === 'Approved' ?
+            'Your appointment has been scheduled and approved by the doctor.' :
+            'Your appointment has been successfully booked and is awaiting approval.';
 
-      const serverUrl = `${req.protocol}://${req.get('host')}`;
-      const approveLink = `${serverUrl}/api/appointments/action/approve?id=${newAppt._id}&token=${actionToken}`;
-      const rejectLink = `${serverUrl}/api/appointments/action/reject?id=${newAppt._id}&token=${actionToken}`;
+          const emailSubject = appointmentStatus === 'Approved' ?
+            'Appointment Scheduled – Samyak Ayurvedic Hospital' :
+            'Appointment Confirmation – Samyak Ayurvedic Hospital';
 
-      const doctorMailOptions = {
-        from: `"Samyak Hospital Alert" <${process.env.EMAIL_USER}>`,
-        to: doctorEmail,
-        subject: `[ACTION REQUIRED] Appointment Approval Needed`,
-        html: `
-          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eef4f1; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-            <!-- Green Clinical Header -->
-            <div style="background-color: #155c3b; color: #fff; padding: 28px; text-align: center;">
-              <h2 style="margin: 0; font-size: 22px; font-weight: 600; letter-spacing: 0.5px;">Appointment Approval Required</h2>
-            </div>
-            
-            <div style="padding: 35px; background-color: #ffffff;">
-              <p style="font-size: 16px; margin: 0 0 20px 0;">Hello <strong>Dr. ${leadDoctor?.firstName || 'Rajan'}</strong>,</p>
-              <p style="font-size: 15px; line-height: 1.6; color: #4f6f60; margin: 0 0 25px 0;">A new patient booking requires your review. Please confirm or decline the following slot:</p>
-              
-              <!-- Patient Card -->
-              <div style="background-color: #f3f8f5; border: 1px solid #e8f5e9; padding: 24px; margin-bottom: 30px; border-radius: 10px;">
-                <h3 style="margin: 0 0 15px 0; color: #155c3b; font-size: 17px; border-bottom: 2px solid #e8f5e9; padding-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Request Details</h3>
-                <div style="font-size: 15px; color: #2c3e50;">
-                  <p style="margin: 10px 0;"><strong>👤 Patient:</strong> ${newAppt.patientName}</p>
-                  <p style="margin: 10px 0;"><strong>📅 Date:</strong> ${new Date(date).toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                  <p style="margin: 10px 0;"><strong>⏰ Time Slot:</strong> ${formattedTime}</p>
-                  <p style="margin: 10px 0;"><strong>🏥 Status:</strong> <span style="background:#fff8e1; color:#f57f17; padding:2px 8px; border-radius:4px; font-size:13px; font-weight:700;">PENDING APPROVAL</span></p>
+          await transporter.sendMailWithLog({
+            to: targetUser.email,
+            subject: emailSubject,
+            html: `
+              <div style="font-family: 'Segoe UI', sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+                <div style="background-color: #155c3b; color: #fff; padding: 20px; text-align: center;">
+                  <h2 style="margin: 0; font-size: 24px;">Appointment ${appointmentStatus === 'Approved' ? 'Scheduled' : 'Confirmation'}</h2>
                 </div>
-              </div>
+                <div style="padding: 30px;">
+                  <p style="font-size: 16px; margin: 0 0 20px 0;">Dear <strong>${targetUser.firstName || 'Patient'}</strong>,</p>
+                  <p style="font-size: 16px; margin: 0 0 25px 0; line-height: 1.5;">${statusMessage}</p>
+                  <div style="background-color: #f9fbf9; border: 1px solid #e0e0e0; padding: 20px; margin-bottom: 25px; border-radius: 8px;">
+                    <h3 style="margin: 0 0 15px 0; color: #155c3b; font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 8px;">Appointment Details</h3>
+                    <div style="font-size: 15px;">
+                      <p style="margin: 8px 0;"><strong>Date:</strong> ${new Date(date).toLocaleDateString()}</p>
+                      <p style="margin: 8px 0;"><strong>Time:</strong> ${formattedTime}</p>
+                      <p style="margin: 8px 0;"><strong>Status:</strong> ${appointmentStatus}</p>
+                    </div>
+                  </div>
+                  <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                    <p style="font-size: 15px; color: #333; margin: 0 0 10px 0;">Our team will contact you if any changes are required.</p>
+                    <p style="font-size: 15px; margin: 0 0 5px 0;">Wishing you good health,</p>
+                    <p style="font-size: 16px; font-weight: bold; color: #155c3b; margin: 0 0 20px 0;">Samyak Ayurvedic Hospital</p>
+                    <div style="font-size: 13px; color: #666; bg-color: #f5f5f5; padding: 15px; border-radius: 6px;">
+                      39/2/03/2, Lmctrc Nagar,<br>
+                      Moti Palace Township,<br>
+                      Junagadh, Gujarat 362015
+                    </div>
+                  </div>
+                </div>
+              </div>`
+          });
+        }
 
-              <!-- Interactive Action Buttons -->
-              <div style="display: flex; gap: 15px; margin-bottom: 25px;">
-                <a href="${approveLink}" style="flex: 1; text-align: center; background-color: #155c3b; color: #ffffff; padding: 14px 20px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 15px; display: inline-block;">✅ Approve Appointment</a>
-                <a href="${rejectLink}" style="flex: 1; text-align: center; background-color: #fff; color: #b71c1c; padding: 12px 20px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 15px; border: 2px solid #b71c1c; display: inline-block;">❌ Reject Appointment</a>
-              </div>
+        // 2. Doctor Alert (Interactive)
+        const leadDoctor = await User.findOne({ role: 'doctor' });
+        const doctorEmail = process.env.DOCTOR_EMAIL || leadDoctor?.email || process.env.EMAIL_USER;
 
-              <div style="padding-top: 20px; border-top: 1px solid #f0f0f0; font-size: 13px; color: #6b8a7a; line-height: 1.5;">
-                <p style="margin-bottom: 10px;"><strong>Note:</strong> These links are secure and valid for 7 days. Once actioned, they cannot be reused.</p>
-                <p>If buttons don’t work, you can also approve or reject from the <a href="${process.env.FRONTEND_URL || '#'}" style="color:#155c3b; font-weight:600;">Doctor Dashboard</a>.</p>
-              </div>
-            </div>
+        if (appointmentStatus === 'Pending' && doctorEmail) {
+          const actionToken = jwt.sign({
+            appointmentId: newAppt._id,
+            doctorId: leadDoctor?._id || "000",
+            action: "process"
+          }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
-            <div style="background-color: #f8fbf9; padding: 15px; text-align: center; font-size: 12px; color: #9aa;">
-              Samyak Ayurvedic Hospital Automated Clinical System
-            </div>
-          </div>
-        `
-      };
+          // Optimization: Use FRONTEND_URL or construction for approve/reject links
+          // Actually those are backend endpoints, so we should keep req construction or use a BACKEND_URL env
+          const serverUrl = `${req.protocol}://${req.get('host')}`;
+          const approveLink = `${serverUrl}/api/appointments/action/approve?id=${newAppt._id}&token=${actionToken}`;
+          const rejectLink = `${serverUrl}/api/appointments/action/reject?id=${newAppt._id}&token=${actionToken}`;
 
-      transporter.sendMail(doctorMailOptions, (err) => {
-        if (err) console.error("Interactive Doctor Alert Failed:", err.message);
-        else console.log("Interactive Doctor Alert Email Sent to:", doctorEmail);
-      });
-    }
+          await transporter.sendMailWithLog({
+            to: doctorEmail,
+            subject: `[ACTION REQUIRED] Appointment Approval Needed`,
+            html: `
+              <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eef4f1; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                <div style="background-color: #155c3b; color: #fff; padding: 28px; text-align: center;">
+                  <h2 style="margin: 0; font-size: 22px; font-weight: 600; letter-spacing: 0.5px;">Appointment Approval Required</h2>
+                </div>
+                <div style="padding: 35px; background-color: #ffffff;">
+                  <p style="font-size: 16px; margin: 0 0 20px 0;">Hello <strong>Dr. ${leadDoctor?.firstName || 'Rajan'}</strong>,</p>
+                  <p style="font-size: 15px; line-height: 1.6; color: #4f6f60; margin: 0 0 25px 0;">A new patient booking requires your review.</p>
+                  <div style="background-color: #f3f8f5; border: 1px solid #e8f5e9; padding: 24px; margin-bottom: 30px; border-radius: 10px;">
+                    <h3 style="margin: 0 0 15px 0; color: #155c3b; font-size: 17px; border-bottom: 2px solid #e8f5e9; padding-bottom: 8px;">Request Details</h3>
+                    <div style="font-size: 15px;">
+                      <p><strong>👤 Patient:</strong> ${newAppt.patientName}</p>
+                      <p><strong>📅 Date:</strong> ${new Date(date).toLocaleDateString()}</p>
+                      <p><strong>⏰ Time Slot:</strong> ${formattedTime}</p>
+                    </div>
+                  </div>
+                  <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+                    <a href="${approveLink}" style="flex: 1; text-align: center; background-color: #155c3b; color: #ffffff; padding: 14px 20px; text-decoration: none; border-radius: 8px; font-weight: 700; display: inline-block;">✅ Approve</a>
+                    <a href="${rejectLink}" style="flex: 1; text-align: center; color: #b71c1c; padding: 12px 20px; text-decoration: none; border: 2px solid #b71c1c; border-radius: 8px; font-weight: 700; display: inline-block;">❌ Reject</a>
+                  </div>
+                  <p style="font-size: 13px; color: #999;">If buttons don't work, approve via the <a href="${process.env.FRONTEND_URL}">Doctor Dashboard</a>.</p>
+                </div>
+              </div>`
+          });
+        }
+      } catch (bgError) {
+        console.error("[BG_TASK_ERROR] Appointment confirmation failed:", bgError.message);
+      }
+    })();
 
     res.json({
       success: true,
@@ -614,66 +576,54 @@ router.delete("/:id", auth, async (req, res) => {
     appt.status = 'Cancelled';
     await appt.save();
 
-    // ----------------------------------------------------
-    // SEND EMAILS (Async-safe)
-    // ----------------------------------------------------
-    const user = await User.findById(appt.patientId);
-    if (user && user.email) {
-      const emailSubject = "Appointment Cancelled – Samyak Ayurvedic Hospital";
-      const emailHtml = `
-      <div style="font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width:600px; margin:auto; border:1px solid #e0e0e0; border-radius:12px; overflow:hidden">
-        <div style="background:#b71c1c; padding:24px; text-align:center">
-          <h2 style="color:#ffffff; margin:0">Appointment Cancelled</h2>
-        </div>
-        <div style="padding:32px; color:#333; line-height:1.6">
-          <p>Dear <strong>${user.firstName || user.name || 'Patient'}</strong>,</p>
-          <p>Your appointment scheduled on <strong>${new Date(appt.date).toLocaleDateString()}</strong> at <strong>${appt.time}</strong> has been cancelled.</p>
-          <div style="background:#ffebee; border: 1px solid #ffcdd2; padding: 20px; margin: 25px 0; border-radius: 8px;">
-            <h3 style="margin: 0 0 15px 0; color: #b71c1c; font-size: 18px; border-bottom: 1px solid #ffcdd2; padding-bottom: 8px;">Cancelled Details</h3>
-            <div style="font-size: 15px;">
-              <p style="margin: 8px 0;"><strong>Date:</strong> ${new Date(appt.date).toLocaleDateString()}</p>
-              <p style="margin: 8px 0;"><strong>Time:</strong> ${appt.time}</p>
-            </div>
-          </div>
-          <p>You can book a new appointment anytime through your patient dashboard.</p>
-          <p style="margin-top:24px">Warm Regards,<br><strong>Samyak Ayurvedic Hospital Team</strong></p>
-        </div>
-        <div style="background:#f1f1f1; padding:16px; text-align:center; font-size:12px; color:#666">
-          Address: 39/2/03/2, Lmctrc Nagar, Moti Palace Township, Junagadh, Gujarat 362015
-        </div>
-      </div>`;
-
-      // Email to Patient
-      try {
-        await transporter.sendMail({
-          from: `"Samyak Ayurvedic Hospital" <${process.env.EMAIL_USER}>`,
-          to: user.email,
-          subject: emailSubject,
-          html: emailHtml
-        });
-        console.log("Cancellation email sent to patient:", user.email);
-      } catch (emailErr) {
-        console.error("Email Error:", emailErr);
-      }
-
-      // Email to Doctor (Copy)
-      try {
-        const doctorEmail = process.env.DOCTOR_EMAIL || process.env.EMAIL_USER;
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
-          to: doctorEmail,
-          subject: `[DOCTOR ALERT] Appointment Cancelled`,
-          html: `<p>Patient <strong>${user.firstName || 'Unknown'}</strong> has cancelled their appointment on ${new Date(appt.date).toLocaleDateString()} at ${appt.time}.</p>`
-        });
-      } catch (emailErr) {
-        console.error("Doctor copy email error:", emailErr);
-      }
-    }
-
+    // Send response immediately
     res.json({
       success: true,
       message: "Appointment cancelled"
     });
+
+    // 📩 Send Emails (Non-blocking background task)
+    (async () => {
+      try {
+        const user = await User.findById(appt.patientId);
+        if (user && user.email) {
+          const emailSubject = "Appointment Cancelled – Samyak Ayurvedic Hospital";
+          const emailHtml = `
+            <div style="font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width:600px; margin:auto; border:1px solid #e0e0e0; border-radius:12px; overflow:hidden">
+              <div style="background:#b71c1c; padding:24px; text-align:center">
+                <h2 style="color:#ffffff; margin:0">Appointment Cancelled</h2>
+              </div>
+              <div style="padding:32px; color:#333; line-height:1.6">
+                <p>Dear <strong>${user.firstName || user.name || 'Patient'}</strong>,</p>
+                <p>Your appointment scheduled on <strong>${new Date(appt.date).toLocaleDateString()}</strong> at <strong>${appt.time}</strong> has been cancelled.</p>
+                <div style="background:#ffebee; border: 1px solid #ffcdd2; padding: 20px; margin: 25px 0; border-radius: 8px;">
+                  <h3 style="margin: 0 0 15px 0; color: #b71c1c; font-size: 18px; border-bottom: 1px solid #ffcdd2; padding-bottom: 8px;">Cancelled Details</h3>
+                  <div style="font-size: 15px;">
+                    <p><strong>Date:</strong> ${new Date(appt.date).toLocaleDateString()}</p>
+                    <p><strong>Time:</strong> ${appt.time}</p>
+                  </div>
+                </div>
+                <p>You can book a new appointment anytime through your dashboard.</p>
+                <p style="margin-top:24px">Warm Regards,<br><strong>Samyak Ayurvedic Hospital Team</strong></p>
+              </div>
+              <div style="background:#f1f1f1; padding:16px; text-align:center; font-size:12px; color:#666">
+                Address: 39/2/03/2, Lmctrc Nagar, Moti Palace Township, Junagadh, Gujarat 362015
+              </div>
+            </div>`;
+
+          await transporter.sendMailWithLog({ to: user.email, subject: emailSubject, html: emailHtml });
+
+          const doctorEmail = process.env.DOCTOR_EMAIL || process.env.EMAIL_USER;
+          await transporter.sendMailWithLog({
+            to: doctorEmail,
+            subject: `[DOCTOR ALERT] Appointment Cancelled`,
+            html: `<p>Patient <strong>${user.firstName || 'Unknown'}</strong> has cancelled their appointment on ${new Date(appt.date).toLocaleDateString()} at ${appt.time}.</p>`
+          });
+        }
+      } catch (bgErr) {
+        console.error("[BG_TASK_ERROR] Cancellation notification failed:", bgErr.message);
+      }
+    })();
   } catch (err) {
     console.error(err);
     res.status(500).json({
@@ -726,31 +676,34 @@ router.put("/:id/reschedule", auth, async (req, res) => {
     appt.status = 'Pending'; // Reset to pending for doctor re-approval
     await appt.save();
 
-    // 📩 Send Reschedule Notification (Silent Failure)
-    try {
-      const user = await User.findById(appt.patientId);
-      if (user && user.email) {
-        const mailOptions = {
-          from: `"Samyak Hospital" <${process.env.EMAIL_USER}>`,
-          to: user.email,
-          subject: "Appointment Rescheduled – Samyak Ayurvedic Hospital",
-          html: `
-            <div style="font-family: sans-serif; padding: 20px; border: 1px solid #d9edf7; border-radius: 8px;">
-              <h2 style="color: #31708f;">Appointment Rescheduled</h2>
-              <p>Hi ${user.firstName},</p>
-              <p>Your appointment has been successfully moved to <strong>${new Date(date).toLocaleDateString()}</strong> at <strong>${formattedTime}</strong>.</p>
-              <p>Status: <strong>Awaiting Approval</strong></p>
-              <p style="margin-top: 30px; font-size: 13px; color: #888;">Samyak Ayurvedic Hospital</p>
-            </div>`
-        };
-        transporter.sendMail(mailOptions);
-      }
-    } catch (e) {}
-
+    // Send response immediately
     res.json({
       success: true,
       appointment: appt
     });
+
+    // 📩 Send Reschedule Notification (Non-blocking background task)
+    (async () => {
+      try {
+        const user = await User.findById(appt.patientId);
+        if (user && user.email) {
+          const mailOptions = {
+            to: user.email,
+            subject: "Appointment Rescheduled – Samyak Ayurvedic Hospital",
+            html: `
+              <div style="font-family: sans-serif; padding: 20px; border: 1px solid #d9edf7; border-radius: 8px;">
+                <h2 style="color: #31708f; margin-top:0;">Appointment Rescheduled</h2>
+                <p>Hi ${user.firstName}, your appointment has been moved to <strong>${new Date(date).toLocaleDateString()}</strong> at <strong>${formattedTime}</strong>.</p>
+                <p>Status: <strong>Awaiting Approval</strong></p>
+                <p style="margin-top: 30px; font-size: 13px; color: #888;">Samyak Ayurvedic Hospital</p>
+              </div>`
+          };
+          await transporter.sendMailWithLog(mailOptions);
+        }
+      } catch (bgErr) {
+        console.error("[BG_TASK_ERROR] Reschedule notification failed:", bgErr.message);
+      }
+    })();
   } catch (err) {
     console.error(err);
     res.status(500).json({
@@ -779,57 +732,52 @@ router.patch("/:id/approve", auth, async (req, res) => {
     appt.approvedByDoctorAt = new Date();
     await appt.save();
 
-    // 📩 Professional HTML Email for Approval (Async-safe)
-    const user = await User.findById(appt.patientId);
-    if (user && user.email) {
-      const emailSubject = "Appointment Approved – Samyak Ayurvedic Hospital";
-      const emailHtml = `
-      <div style="font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width:600px; margin:auto; border:1px solid #e0e0e0; border-radius:12px; overflow:hidden">
-        <div style="background:#155c3b; padding:24px; text-align:center">
-          <h2 style="color:#ffffff; margin:0">Appointment Approved</h2>
-        </div>
-        <div style="padding:32px; color:#333; line-height:1.6">
-          <p>Dear <strong>${user.firstName || 'Patient'}</strong>,</p>
-          <p>Your appointment at <strong>Samyak Ayurvedic Hospital</strong> has been successfully approved.</p>
-          <div style="background:#f9f9f9; padding:20px; border-radius:8px; margin:20px 0">
-            <p style="margin:4px 0"><strong>📅 Date:</strong> ${new Date(appt.date).toLocaleDateString()}</p>
-            <p style="margin:4px 0"><strong>⏰ Time:</strong> ${appt.time}</p>
-            <p style="margin:4px 0"><strong>👨‍⚕️ Doctor:</strong> Dr. Rajan Karangiya</p>
-            <p style="margin:4px 0"><strong>🏥 Clinic:</strong> Samyak Ayurvedic Hospital</p>
-          </div>
-          <p>Please arrive 10 minutes prior to your scheduled time.</p>
-          <p style="margin-top:24px">Warm Regards,<br><strong>Samyak Ayurvedic Hospital Team</strong></p>
-        </div>
-        <div style="background:#f1f1f1; padding:16px; text-align:center; font-size:12px; color:#666">
-          Address: 39/2/03/2, Lmctrc Nagar, Moti Palace Township, Junagadh, Gujarat 362015
-        </div>
-      </div>`;
+    res.json({
+      success: true,
+      message: "Approved successfully",
+      appointment: appt
+    });
 
+    // 📩 Send Confirmation Email (Non-blocking background task)
+    (async () => {
       try {
-        await transporter.sendMail({
-          from: `Samyak Ayurvedic Hospital <${process.env.EMAIL_USER}>`,
-          to: user.email,
-          subject: emailSubject,
-          html: emailHtml
-        });
-        console.log("Approval email sent to patient:", user.email);
-      } catch (emailErr) {
-        console.error("Email Error:", emailErr);
-      }
+        const user = await User.findById(appt.patientId);
+        if (user && user.email) {
+          const emailSubject = "Appointment Approved – Samyak Ayurvedic Hospital";
+          const emailHtml = `
+            <div style="font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width:600px; margin:auto; border:1px solid #e0e0e0; border-radius:12px; overflow:hidden">
+              <div style="background:#155c3b; padding:24px; text-align:center">
+                <h2 style="color:#ffffff; margin:0">Appointment Approved</h2>
+              </div>
+              <div style="padding:32px; color:#333; line-height:1.6">
+                <p>Dear <strong>${user.firstName || 'Patient'}</strong>,</p>
+                <p>Your appointment at <strong>Samyak Ayurvedic Hospital</strong> has been successfully approved.</p>
+                <div style="background:#f9f9f9; padding:20px; border-radius:8px; margin:20px 0">
+                  <p><strong>📅 Date:</strong> ${new Date(appt.date).toLocaleDateString()}</p>
+                  <p><strong>⏰ Time:</strong> ${appt.time}</p>
+                  <p><strong>👨‍⚕️ Doctor:</strong> Dr. Rajan Karangiya</p>
+                </div>
+                <p>Please arrive 10 minutes prior to your scheduled time.</p>
+                <p style="margin-top:24px">Warm Regards,<br><strong>Samyak Ayurvedic Hospital Team</strong></p>
+              </div>
+              <div style="background:#f1f1f1; padding:16px; text-align:center; font-size:12px; color:#666">
+                Address: 39/2/03/2, Lmctrc Nagar, Moti Palace Township, Junagadh, Gujarat 362015
+              </div>
+            </div>`;
 
-      // Email to Doctor (confirmation copy)
-      try {
-        const doctorEmail = process.env.DOCTOR_EMAIL || process.env.EMAIL_USER;
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
-          to: doctorEmail,
-          subject: `[DOCTOR COPY] ${emailSubject}`,
-          html: `<p>FYI: You have approved an appointment for <strong>${appt.patientName || user.firstName || 'Patient'}</strong>.</p><br>${emailHtml}`
-        });
-      } catch (emailErr) {
-        console.error("Doctor copy email error:", emailErr);
+          await transporter.sendMailWithLog({ to: user.email, subject: emailSubject, html: emailHtml });
+
+          const doctorEmail = process.env.DOCTOR_EMAIL || process.env.EMAIL_USER;
+          await transporter.sendMailWithLog({
+            to: doctorEmail,
+            subject: `[DOCTOR COPY] ${emailSubject}`,
+            html: `<p>FYI: You have approved an appointment for <strong>${appt.patientName || user.firstName || 'Patient'}</strong>.</p><br>${emailHtml}`
+          });
+        }
+      } catch (bgErr) {
+        console.error("[BG_TASK_ERROR] Approval notification failed:", bgErr.message);
       }
-    }
+    })();
 
     res.json({
       success: true,
@@ -867,60 +815,55 @@ router.patch("/:id/reject", auth, async (req, res) => {
     if (reason) appt.reason = reason;
     await appt.save();
 
-    // 📩 Professional HTML Email for Rejection (Async-safe)
-    const user = await User.findById(appt.patientId);
-    if (user && user.email) {
-      const emailSubject = "Appointment Rejected – Samyak Ayurvedic Hospital";
-      const emailHtml = `
-      <div style="font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width:600px; margin:auto; border:1px solid #e0e0e0; border-radius:12px; overflow:hidden">
-        <div style="background:#b71c1c; padding:24px; text-align:center">
-          <h2 style="color:#ffffff; margin:0">Appointment Rejected</h2>
-        </div>
-        <div style="padding:32px; color:#333; line-height:1.6">
-          <p>Dear <strong>${user.firstName || 'Patient'}</strong>,</p>
-          <p>We regret to inform you that your appointment request has been declined.</p>
-          <div style="background:#f9f9f9; padding:20px; border-radius:8px; margin:20px 0">
-            <p style="margin:4px 0"><strong>📅 Date:</strong> ${new Date(appt.date).toLocaleDateString()}</p>
-            <p style="margin:4px 0"><strong>⏰ Time:</strong> ${appt.time}</p>
-            <p style="margin:4px 0"><strong>👨‍⚕️ Doctor:</strong> Dr. Rajan Karangiya</p>
-            <p style="margin:4px 0"><strong>🏥 Clinic:</strong> Samyak Ayurvedic Hospital</p>
-          </div>
-          <div style="background:#fff3f3; border-left:4px solid #b71c1c; padding:16px; margin:20px 0">
-            <p style="margin:0; color:#b71c1c"><strong>Reason:</strong> ${reason || 'Schedule conflicts or doctor unavailability'}</p>
-          </div>
-          <p>Please feel free to book another time slot through your dashboard.</p>
-          <p style="margin-top:24px">Warm Regards,<br><strong>Samyak Ayurvedic Hospital Team</strong></p>
-        </div>
-        <div style="background:#f1f1f1; padding:16px; text-align:center; font-size:12px; color:#666">
-          Address: 39/2/03/2, Lmctrc Nagar, Moti Palace Township, Junagadh, Gujarat 362015
-        </div>
-      </div>`;
+    res.json({
+      success: true,
+      message: "Rejected successfully",
+      appointment: appt
+    });
 
+    // 📩 Send Email Notification (Non-blocking background task)
+    (async () => {
       try {
-        await transporter.sendMail({
-          from: `Samyak Ayurvedic Hospital <${process.env.EMAIL_USER}>`,
-          to: user.email,
-          subject: emailSubject,
-          html: emailHtml
-        });
-        console.log("Rejection email sent to patient:", user.email);
-      } catch (emailErr) {
-        console.error("Email Error:", emailErr);
-      }
+        const user = await User.findById(appt.patientId);
+        if (user && user.email) {
+          const emailSubject = "Appointment Rejected – Samyak Ayurvedic Hospital";
+          const emailHtml = `
+            <div style="font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width:600px; margin:auto; border:1px solid #e0e0e0; border-radius:12px; overflow:hidden">
+              <div style="background:#b71c1c; padding:24px; text-align:center">
+                <h2 style="color:#ffffff; margin:0">Appointment Rejected</h2>
+              </div>
+              <div style="padding:32px; color:#333; line-height:1.6">
+                <p>Dear <strong>${user.firstName || 'Patient'}</strong>,</p>
+                <p>We regret to inform you that your appointment request has been declined.</p>
+                <div style="background:#f9f9f9; padding:20px; border-radius:8px; margin:20px 0">
+                  <p><strong>📅 Date:</strong> ${new Date(appt.date).toLocaleDateString()}</p>
+                  <p><strong>⏰ Time:</strong> ${appt.time}</p>
+                  <p><strong>👨‍⚕️ Doctor:</strong> Dr. Rajan Karangiya</p>
+                </div>
+                <div style="background:#fff3f3; border-left:4px solid #b71c1c; padding:16px; margin:20px 0">
+                  <p style="margin:0; color:#b71c1c"><strong>Reason:</strong> ${reason || 'Schedule conflicts or doctor unavailability'}</p>
+                </div>
+                <p>Please feel free to book another time slot through your dashboard.</p>
+                <p style="margin-top:24px">Warm Regards,<br><strong>Samyak Ayurvedic Hospital Team</strong></p>
+              </div>
+              <div style="background:#f1f1f1; padding:16px; text-align:center; font-size:12px; color:#666">
+                Address: 39/2/03/2, Lmctrc Nagar, Moti Palace Township, Junagadh, Gujarat 362015
+              </div>
+            </div>`;
 
-      // Email to Doctor (confirmation copy)
-      try {
-        const doctorEmail = process.env.DOCTOR_EMAIL || process.env.EMAIL_USER;
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
-          to: doctorEmail,
-          subject: `[DOCTOR COPY] ${emailSubject}`,
-          html: `<p>FYI: You have rejected an appointment for <strong>${appt.patientName || user.firstName || 'Patient'}</strong>.</p><br>${emailHtml}`
-        });
-      } catch (emailErr) {
-        console.error("Doctor copy email error:", emailErr);
+          await transporter.sendMailWithLog({ to: user.email, subject: emailSubject, html: emailHtml });
+
+          const doctorEmail = process.env.DOCTOR_EMAIL || process.env.EMAIL_USER;
+          await transporter.sendMailWithLog({
+            to: doctorEmail,
+            subject: `[DOCTOR COPY] ${emailSubject}`,
+            html: `<p>FYI: You have rejected an appointment for <strong>${appt.patientName || user.firstName || 'Patient'}</strong>.</p><br>${emailHtml}`
+          });
+        }
+      } catch (bgErr) {
+        console.error("[BG_TASK_ERROR] Rejection notification failed:", bgErr.message);
       }
-    }
+    })();
 
     res.json({
       success: true,
@@ -968,23 +911,28 @@ router.get("/action/approve", async (req, res) => {
     appt.approvedByDoctorAt = new Date();
     await appt.save();
 
-    // Notify Patient
-    const user = await User.findById(appt.patientId);
-    if (user && user.email) {
-      const mailOptions = {
-        from: `"Samyak Hospital" <${process.env.EMAIL_USER}>`,
-        to: user.email,
-        subject: "Appointment Approved – Samyak Ayurvedic Hospital",
-        html: `
-            <div style="font-family:sans-serif; padding:40px; border:1px solid #eaf4ee; border-radius:12px; max-width:500px; margin:auto;">
-              <h2 style="color:#155c3b; margin-top:0;">Good News!</h2>
-              <p>Hi ${user.firstName}, your appointment for <strong>${new Date(appt.date).toLocaleDateString()}</strong> at <strong>${appt.time}</strong> has been successfully approved.</p>
-              <p>We look forward to seeing you at Samyak Ayurvedic Hospital.</p>
-              <p style="margin-top:25px; color:#888; font-size:13px;">Warm Regards,<br>Dr. Rajan Karangiya</p>
-            </div>`
-      };
-      transporter.sendMail(mailOptions);
-    }
+    // Notify Patient (Background)
+    (async () => {
+      try {
+        const user = await User.findById(appt.patientId);
+        if (user && user.email) {
+          const mailOptions = {
+            to: user.email,
+            subject: "Appointment Approved – Samyak Ayurvedic Hospital",
+            html: `
+              <div style="font-family:sans-serif; padding:40px; border:1px solid #eaf4ee; border-radius:12px; max-width:500px; margin:auto;">
+                <h2 style="color:#155c3b; margin-top:0;">Good News!</h2>
+                <p>Hi ${user.firstName}, your appointment for <strong>${new Date(appt.date).toLocaleDateString()}</strong> at <strong>${appt.time}</strong> has been successfully approved.</p>
+                <p>We look forward to seeing you at Samyak Ayurvedic Hospital.</p>
+                <p style="margin-top:25px; color:#888; font-size:13px;">Warm Regards,<br>Dr. Rajan Karangiya</p>
+              </div>`
+          };
+          await transporter.sendMailWithLog(mailOptions);
+        }
+      } catch (e) {
+        console.error("[BG_TASK_ERROR] Mail failed in action approve link:", e.message);
+      }
+    })();
 
     res.send(`
       <div style="font-family:sans-serif; text-align:center; padding:50px; background:#f9fbf9; min-height:100vh;">
@@ -1028,17 +976,22 @@ router.get("/action/reject", async (req, res) => {
     appt.rejectedByDoctorAt = new Date();
     await appt.save();
 
-    // Notify Patient
-    const user = await User.findById(appt.patientId);
-    if (user && user.email) {
-      const mailOptions = {
-        from: `"Samyak Hospital" <${process.env.EMAIL_USER}>`,
-        to: user.email,
-        subject: "Appointment Update – Samyak Ayurvedic Hospital",
-        html: `<p>Hi ${user.firstName}, we regret to inform you that your appointment request for ${new Date(appt.date).toLocaleDateString()} at ${appt.time} has been declined due to a schedule conflict. Please try booking another slot.</p>`
-      };
-      transporter.sendMail(mailOptions);
-    }
+    // Notify Patient (Background)
+    (async () => {
+      try {
+        const user = await User.findById(appt.patientId);
+        if (user && user.email) {
+          const mailOptions = {
+            to: user.email,
+            subject: "Appointment Update – Samyak Ayurvedic Hospital",
+            html: `<p>Hi ${user.firstName}, we regret to inform you that your appointment request for ${new Date(appt.date).toLocaleDateString()} at ${appt.time} has been declined due to a schedule conflict. Please try booking another slot.</p>`
+          };
+          await transporter.sendMailWithLog(mailOptions);
+        }
+      } catch (e) {
+        console.error("[BG_TASK_ERROR] Mail failed in action reject link:", e.message);
+      }
+    })();
 
     res.send(`
       <div style="font-family:sans-serif; text-align:center; padding:50px;">

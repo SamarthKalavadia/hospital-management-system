@@ -11,6 +11,8 @@ async function sendPrescriptionEmail(options) {
     throw new Error("Patient email missing");
   }
 
+  console.log(`📧 [sendPrescriptionEmail] Starting prescription email send to: ${patient.email}`);
+  
   const mailOptions = {
     from: `"Samyak Ayurvedic Hospital" <${process.env.EMAIL_USER}>`,
     to: patient.email,
@@ -38,7 +40,14 @@ async function sendPrescriptionEmail(options) {
     }]
   };
 
-  return await transporter.sendMail(mailOptions);
+  try {
+    const result = await transporter.sendMailWithLog(mailOptions);
+    console.log(`✅ [sendPrescriptionEmail] Prescription email sent successfully to: ${patient.email}`);
+    return result;
+  } catch (error) {
+    console.error(`❌ [sendPrescriptionEmail] Failed to send prescription to ${patient.email}:`, error.message);
+    throw error;
+  }
 }
 
 module.exports = {
