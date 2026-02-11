@@ -4,8 +4,8 @@ const transporter = require("./email");
 module.exports = async (email, token, host) => {
   // Construct activation link (Assuming standard Live Server port 5500 or similar)
   // Adjust path based on where frontend files are served
-  const baseUrl = process.env.FRONTEND_URL || 'http://127.0.0.1:5501';
-  const link = `${baseUrl}/frontend/activate.html?token=${token}&email=${email}`;
+  const baseUrl = process.env.FRONTEND_URL;
+  const link = `${baseUrl}/activate.html?token=${token}&email=${email}`;
 
   try {
     await transporter.sendMail({

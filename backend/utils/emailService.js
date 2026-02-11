@@ -1,4 +1,4 @@
-const nodemailer = require('nodemailer');
+const transporter = require("./email");
 
 async function sendPrescriptionEmail(options) {
   const {
@@ -10,14 +10,6 @@ async function sendPrescriptionEmail(options) {
   if (!patient || !patient.email) {
     throw new Error("Patient email missing");
   }
-
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    }
-  });
 
   const mailOptions = {
     from: `"Samyak Ayurvedic Hospital" <${process.env.EMAIL_USER}>`,
