@@ -2,36 +2,48 @@ const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const User = require("../models/User");
 
+// Ensure callback URL exists
+if (!process.env.GOOGLE_CALLBACK_URL) {
+  console.error("❌ GOOGLE_CALLBACK_URL is not defined in environment variables");
+}
+
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL
+      callbackURL: process.env.GOOGLE_CALLBACK_URL, // MUST come from Railway env
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        const email = profile.emails[0].value;
+        const email =
+          profile.emails && profile.emails.length > 0
+            ? profile.emails[0].value
+            : null;
+
+        if (!email) {
+          return done(null, false, { message: "NO_EMAIL_FROM_GOOGLE" });
+        }
 
         const user = await User.findOne({ email });
 
+        // If user not registered, prevent auto creation
         if (!user) {
-          // Do not auto-create users via Google; pass profile so caller can redirect to register
           return done(null, false, {
             message: "NOT_REGISTERED",
             profile: {
-              email: profile.emails && profile.emails[0] && profile.emails[0].value,
-              name: profile.displayName
-            }
+              email: email,
+              name: profile.displayName,
+            },
           });
         }
 
-        // Only allow patients to log in via Google
+        // Only patients allowed
         if (user.role && user.role !== "patient") {
           return done(null, false, { message: "NOT_A_PATIENT" });
         }
 
-        // mark that this account is a Google user (persist)
+        // Mark as Google user if first time
         if (!user.isGoogleUser) {
           user.isGoogleUser = true;
           await user.save();
@@ -39,17 +51,21 @@ passport.use(
 
         return done(null, user);
       } catch (err) {
-        done(err, null);
+        console.error("❌ Google OAuth Error:", err);
+        return done(err, null);
       }
     }
   )
 );
 
-passport.serializeUser((user, done) => done(null, user._id));
+passport.serializeUser((user, done) => {
+  done(null, user._id);
+});
+
 passport.deserializeUser(async (id, done) => {
   try {
-    const u = await User.findById(id);
-    done(null, u);
+    const user = await User.findById(id);
+    done(null, user);
   } catch (err) {
     done(err, null);
   }
