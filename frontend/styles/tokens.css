@@ -143,8 +143,14 @@
 }
 
 /* Global No-Underline Reset */
-a, a:hover, a:focus, a:active, a:visited,
-button, button:hover, button:focus {
+a,
+a:hover,
+a:focus,
+a:active,
+a:visited,
+button,
+button:hover,
+button:focus {
   text-decoration: none !important;
 }
 
@@ -519,41 +525,36 @@ a:hover {
 }
 
 .password-wrapper input {
-    width: 100%;
-    padding-right: 45px;
+    padding-right: 48px !important;
 }
 
 .toggle-password {
     position: absolute;
-    right: 12px;
+    right: 14px;
     top: 50%;
     transform: translateY(-50%);
     background: none;
     border: none;
     cursor: pointer;
-    opacity: 0.6;
-    padding: 0;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
+    height: 24px;
+    width: 24px;
+    color: #2e6f4f;
+    padding: 0;
     z-index: 10;
-    min-width: unset;
-    min-height: unset;
     margin: 0;
-    box-shadow: none;
 }
 
 .toggle-password:hover {
-    opacity: 1;
-    background: none;
-    transform: translateY(-50%);
-    box-shadow: none;
+    color: #1f4d36;
 }
 
 .toggle-password svg {
     width: 20px;
     height: 20px;
-    stroke: var(--text-secondary);
+    stroke: currentColor;
     fill: none;
+    pointer-events: none;
 }
-
