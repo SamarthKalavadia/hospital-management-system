@@ -393,8 +393,8 @@
     }
 
     .status-completed {
-      background: #1b5e20;
-      color: #fff;
+      background: #e0e0e0;
+      color: #616161;
     }
 
     .status-cancelled {
@@ -1722,14 +1722,22 @@
 
     let oldRescheduleData = null;
 
-    function handleRestriction(id, rawDate, time, type) {
+    function handleRestriction(id, rawDate, time, type, status) {
       try {
+        // 2️⃣ REMOVE WARNING FOR ALREADY CANCELLED
+        // Only show warning if status is "Confirmed"
+        if (status && status.toLowerCase() === 'cancelled') {
+          // Do nothing - no toast, no popup, no warning
+          return;
+        }
+
         const appointmentDateTime = new Date(`${rawDate}T${time}`);
         const now = new Date();
         const diffInMilliseconds = appointmentDateTime - now;
         const diffInHours = diffInMilliseconds / (1000 * 60 * 60);
 
-        if (diffInHours < 24) {
+        // Only show 24-hour warning for confirmed appointments
+        if (diffInHours < 24 && status && status.toLowerCase() === 'confirmed') {
           const actionName = type === 'reschedule' ? 'reschedule' : 'cancel';
           window.showToast("warning", `You cannot ${actionName} within 24 hours of the appointment.`);
           return;
@@ -2096,15 +2104,31 @@
         }
 
         tbody.innerHTML = list.map(a => {
-          const status = a.status || 'Pending';
+          let status = a.status || 'Pending';
           let badgeClass = 'status-pending';
           let displayStatus = status;
 
-          // Handle all status variations
+          // 3️⃣ AUTO MARK COMPLETED
+          // Check if appointment is past and status is confirmed
           const statusLower = status.toLowerCase();
-          if (statusLower === 'approved' || statusLower === 'confirmed') {
-            badgeClass = 'status-confirmed';
-            displayStatus = 'Confirmed';
+          if (statusLower === 'confirmed' || statusLower === 'approved') {
+            try {
+              const appointmentDateTime = new Date(`${a.rawDate}T${a.time}`);
+              const now = new Date();
+              if (appointmentDateTime < now) {
+                // Auto mark as completed (display only)
+                status = 'Completed';
+                displayStatus = 'Completed';
+                badgeClass = 'status-completed';
+              } else {
+                badgeClass = 'status-confirmed';
+                displayStatus = 'Confirmed';
+              }
+            } catch (e) {
+              // If date parsing fails, treat as confirmed
+              badgeClass = 'status-confirmed';
+              displayStatus = 'Confirmed';
+            }
           } else if (statusLower === 'completed') {
             badgeClass = 'status-completed';
             displayStatus = 'Completed';
@@ -2119,12 +2143,30 @@
             displayStatus = 'Pending';
           }
 
-          // MANDATORY FIX: ALWAYS render Reschedule and Cancel buttons
-          // The 24-hour check is handled in handleRestriction()
-          const actionButtons = `
-              <button class="action-item reschedule-btn" onclick="handleRestriction('${a._id}', '${a.rawDate || ""}', '${a.time}', 'reschedule')">Reschedule</button>
-              <button class="action-item cancel-btn" onclick="handleRestriction('${a._id}', '${a.rawDate || ""}', '${a.time}', 'cancel')">Cancel</button>
-          `;
+          // 1️⃣ REMOVE ACTIONS FOR CANCELLED/COMPLETED APPOINTMENTS
+          // 4️⃣ UI RULES - Hide action menu for cancelled and completed
+          const finalStatusLower = displayStatus.toLowerCase();
+          const shouldHideActions = finalStatusLower === 'cancelled' || finalStatusLower === 'completed' || finalStatusLower === 'rejected';
+          
+          let actionColumn = '';
+          if (shouldHideActions) {
+            // Completely hide action column content
+            actionColumn = '';
+          } else {
+            // Show action menu with buttons (pass status for validation)
+            const actionButtons = `
+                <button class="action-item reschedule-btn" onclick="handleRestriction('${a._id}', '${a.rawDate || ""}', '${a.time}', 'reschedule', '${displayStatus}')">Reschedule</button>
+                <button class="action-item cancel-btn" onclick="handleRestriction('${a._id}', '${a.rawDate || ""}', '${a.time}', 'cancel', '${displayStatus}')">Cancel</button>
+            `;
+            actionColumn = `
+               <div class="action-menu">
+                  <button class="action-btn" onclick="toggleAction('${a._id}')">⋮</button>
+                  <div id="action-${a._id}" class="action-dropdown">
+                      ${actionButtons}
+                  </div>
+               </div>
+            `;
+          }
 
           return `
         <tr style="border-bottom:1px solid #f5f5f5;transition:background .2s">
@@ -2134,12 +2176,7 @@
             <span class="status-badge ${badgeClass}">${displayStatus}</span>
           </td>
           <td style="padding:16px;text-align:right">
-             <div class="action-menu">
-                <button class="action-btn" onclick="toggleAction('${a._id}')">⋮</button>
-                <div id="action-${a._id}" class="action-dropdown">
-                    ${actionButtons}
-                </div>
-             </div>
+             ${actionColumn}
           </td>
         </tr>
         `;
