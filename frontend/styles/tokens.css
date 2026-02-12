@@ -143,8 +143,14 @@
 }
 
 /* Global No-Underline Reset */
-a, a:hover, a:focus, a:active, a:visited,
-button, button:hover, button:focus {
+a,
+a:hover,
+a:focus,
+a:active,
+a:visited,
+button,
+button:hover,
+button:focus {
   text-decoration: none !important;
 }
 
@@ -510,4 +516,45 @@ a:hover {
 .badge-primary {
   background: var(--color-primary-light);
   color: var(--color-primary-dark);
+}
+
+/* ================= PASSWORD TOGGLE SYSTEM ================= */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    padding-right: 48px !important;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+    width: 24px;
+    color: #2e6f4f;
+    padding: 0;
+    z-index: 10;
+    margin: 0;
+}
+
+.toggle-password:hover {
+    color: #1f4d36;
+}
+
+.toggle-password svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    pointer-events: none;
 }
