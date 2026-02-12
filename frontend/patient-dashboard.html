@@ -2028,19 +2028,11 @@
       }
     }
 
-    // CHANGE 2: WELCOME MESSAGE LOGIC
+    // GREETING MESSAGE LOGIC - Always show "Welcome, {FirstName}"
     if (document.getElementById("welcomeHeading")) {
-      const hasLoggedIn = localStorage.getItem("hasLoggedInBefore");
-      const name = user.name || user.firstName || 'Patient';
-
-      if (!hasLoggedIn) {
-        // First time
-        document.getElementById("welcomeHeading").textContent = `Welcome, ${name}`;
-        localStorage.setItem("hasLoggedInBefore", "true");
-      } else {
-        // Returning
-        document.getElementById("welcomeHeading").textContent = `Welcome back, ${name}`;
-      }
+      const fullName = user.name || user.firstName || 'Patient';
+      const firstName = fullName.split(" ")[0];
+      document.getElementById("welcomeHeading").textContent = `Welcome, ${firstName}`;
     }
 
     function show(id) {
