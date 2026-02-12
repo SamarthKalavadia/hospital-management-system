@@ -511,3 +511,49 @@ a:hover {
   background: var(--color-primary-light);
   color: var(--color-primary-dark);
 }
+
+/* ================= PASSWORD TOGGLE SYSTEM ================= */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 45px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.6;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    min-width: unset;
+    min-height: unset;
+    margin: 0;
+    box-shadow: none;
+}
+
+.toggle-password:hover {
+    opacity: 1;
+    background: none;
+    transform: translateY(-50%);
+    box-shadow: none;
+}
+
+.toggle-password svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--text-secondary);
+    fill: none;
+}
+
