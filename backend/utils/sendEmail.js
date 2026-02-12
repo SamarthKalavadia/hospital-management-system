@@ -1,13 +1,19 @@
-const transporter = require("./email");
+const { sendEmail: sendEmailService } = require('./emailService');
 
+/**
+ * Simple email sender wrapper
+ * @param {string} to - Recipient email
+ * @param {string} subject - Email subject
+ * @param {string} text - Plain text content
+ */
 const sendEmail = async (to, subject, text) => {
   console.log(`📧 [sendEmail] Starting email send to: ${to}`);
   
   try {
-    await transporter.sendMailWithLog({
-      from: `"Samyak Ayurvedic Hospital" <${process.env.EMAIL_USER}>`,
+    await sendEmailService({
       to,
       subject,
+      html: `<p>${text}</p>`,
       text
     });
     console.log(`✅ [sendEmail] Email sent successfully to: ${to}`);

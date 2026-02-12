@@ -1,19 +1,26 @@
-const transporter = require("./email");
+const { sendEmail } = require('./emailService');
 
+/**
+ * Send OTP verification email
+ * @param {string} email - Recipient email
+ * @param {string} otp - One-time password
+ */
 module.exports = async (email, otp) => {
   console.log(`📧 [sendOtp] Starting OTP email send to: ${email}`);
   
+  const htmlContent = `
+    <h2>OTP Verification</h2>
+    <p>Your OTP is:</p>
+    <h1>${otp}</h1>
+    <p>Valid for 5 minutes.</p>
+  `;
+
   try {
-    await transporter.sendMailWithLog({
-      from: `"Samyak Hospital" <${process.env.EMAIL_USER}>`,
+    await sendEmail({
       to: email,
       subject: "Your OTP Verification Code",
-      html: `
-        <h2>OTP Verification</h2>
-        <p>Your OTP is:</p>
-        <h1>${otp}</h1>
-        <p>Valid for 5 minutes.</p>
-      `
+      html: htmlContent,
+      text: `Your OTP is: ${otp}. Valid for 5 minutes.`
     });
     console.log(`✅ [sendOtp] OTP email sent successfully to: ${email}`);
   } catch (error) {

@@ -1,54 +1,94 @@
-const nodemailer = require("nodemailer");
+const sgMail = require("@sendgrid/mail");
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // true for 465, false for 587
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false
-  }
-});
+// Initialize SendGrid with API key
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// Verify transporter on startup
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("❌ Email transporter verification FAILED:", error.message);
-  } else {
-    console.log("✅ Email transporter is ready to send messages");
-  }
-});
+/**
+ * Transporter object for backward compatibility
+ * Now uses SendGrid instead of Nodemailer SMTP
+ */
+const transporter = {
+  /**
+   * Send email with logging (legacy interface)
+   * @param {Object} mailOptions - Email options
+   * @param {string} mailOptions.to - Recipient email
+   * @param {string} mailOptions.subject - Email subject
+   * @param {string} [mailOptions.html] - HTML content
+   * @param {string} [mailOptions.text] - Plain text content
+   * @param {string} [mailOptions.from] - Sender email (optional)
+   * @param {Array} [mailOptions.attachments] - Email attachments (optional)
+   */
+  sendMailWithLog: async (mailOptions) => {
+    console.log("📧 Email send via SendGrid:");
+    console.log("   To:", mailOptions.to);
+    console.log("   Subject:", mailOptions.subject);
 
-// Wrapper function for sending emails with better logging
-transporter.sendMailWithLog = async (mailOptions) => {
-  // Ensure proper headers for deliverability
-  const enhancedOptions = {
-    ...mailOptions,
-    from: mailOptions.from || `"Samyak Ayurvedic Hospital" <${process.env.EMAIL_USER}>`,
-    replyTo: process.env.EMAIL_USER,
-    headers: {
-      'X-Priority': '1',
-      'X-Mailer': 'Samyak Hospital System'
+    try {
+      const msg = {
+        to: mailOptions.to,
+        from: mailOptions.from || process.env.EMAIL_USER,
+        subject: mailOptions.subject,
+        html: mailOptions.html,
+      };
+
+      // Add optional text content
+      if (mailOptions.text) {
+        msg.text = mailOptions.text;
+      }
+
+      // Add optional attachments
+      if (mailOptions.attachments && mailOptions.attachments.length > 0) {
+        msg.attachments = mailOptions.attachments.map(att => ({
+          content: att.content.toString('base64'),
+          filename: att.filename,
+          type: att.type || 'application/octet-stream',
+          disposition: 'attachment'
+        }));
+      }
+
+      // Add optional headers
+      if (mailOptions.replyTo) {
+        msg.replyTo = mailOptions.replyTo;
+      }
+
+      await sgMail.send(msg);
+
+      console.log("✅ Email sent successfully via SendGrid");
+      console.log("   To:", msg.to);
+      console.log("   Subject:", msg.subject);
+
+      // Return mock info object for compatibility
+      return {
+        messageId: `<${Date.now()}@sendgrid>`,
+        response: 'Email sent via SendGrid'
+      };
+    } catch (error) {
+      console.error("❌ Email send FAILED:");
+      console.error("   To:", mailOptions.to);
+      console.error("   Subject:", mailOptions.subject);
+      console.error("   Error:", error.response?.body || error.message);
+      throw error;
     }
-  };
+  },
 
-  try {
-    const info = await transporter.sendMail(enhancedOptions);
-    console.log("📧 Email sent successfully:");
-    console.log("   To:", enhancedOptions.to);
-    console.log("   Subject:", enhancedOptions.subject);
-    console.log("   MessageId:", info.messageId);
-    console.log("   Response:", info.response);
-    return info;
-  } catch (err) {
-    console.error("❌ Email send FAILED:");
-    console.error("   To:", enhancedOptions.to);
-    console.error("   Subject:", enhancedOptions.subject);
-    console.error("   Error:", err.message);
-    throw err;
+  /**
+   * Send email (legacy interface)
+   * Alias for sendMailWithLog
+   */
+  sendMail: async (mailOptions) => {
+    return transporter.sendMailWithLog(mailOptions);
+  },
+
+  /**
+   * Verify transporter (no-op for SendGrid)
+   * Kept for backward compatibility
+   */
+  verify: (callback) => {
+    console.log("⚠️ transporter.verify() called - not needed with SendGrid API");
+    if (callback) {
+      callback(null, true);
+    }
+    return Promise.resolve(true);
   }
 };
 
