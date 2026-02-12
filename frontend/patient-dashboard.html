@@ -913,24 +913,7 @@
       color: #1a202c;
     }
 
-    .modal-close {
-      background: #f1f5f9;
-      border: none;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: #64748b;
-      transition: all 0.2s ease;
-    }
 
-    .modal-close:hover {
-      color: #E53935;
-      background-color: rgba(229, 57, 53, 0.08);
-    }
 
     .modal-body {
       padding: 32px;
@@ -1140,6 +1123,7 @@
         /* Hide text on very small screens if needed, or keep it */
       }
     }
+
     .avatar-circle {
       background-color: #1F6B4F;
       color: #FFFFFF;
@@ -2139,7 +2123,7 @@
           // 4️⃣ UI RULES - Hide action menu for cancelled and completed
           const finalStatusLower = displayStatus.toLowerCase();
           const shouldHideActions = finalStatusLower === 'cancelled' || finalStatusLower === 'completed' || finalStatusLower === 'rejected';
-          
+
           let actionColumn = '';
           if (shouldHideActions) {
             // Completely hide action column content
@@ -2725,7 +2709,7 @@
   <!-- Feedback Modal -->
   <div class="booking-modal" id="feedbackModal">
     <div class="modal-content">
-      <div class="close-modal" onclick="closeFeedbackModal()">✕</div>
+      <div class="close-modal" onclick="closeFeedbackModal()">&times;</div>
       <h2 style="color:#155c3b; margin-bottom:8px;">Report Recovery</h2>
       <p style="font-size:13px; color:#6b8a7a; margin-bottom:20px;">Your response helps your doctor understand recovery
         progress.</p>
@@ -2762,7 +2746,7 @@
   <!-- View Feedback Modal -->
   <div class="booking-modal" id="viewFeedbackModal" style="z-index: 3000;">
     <div class="modal-content" style="max-width: 450px;">
-      <div class="close-modal" onclick="closeViewFeedbackModal()">✕</div>
+      <div class="close-modal" onclick="closeViewFeedbackModal()">&times;</div>
       <h2 style="color:#155c3b; margin-bottom:24px; display:flex; align-items:center; gap:10px;">
         <span>📊</span> Recovery Report
       </h2>
@@ -2785,7 +2769,7 @@
     <div class="modal-content"
       style="max-width: 500px; height: 80vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 24px;">
       <div style="padding: 24px; background: #E8F3EE; border-bottom: 1px solid #D7E7DF; position: relative;">
-        <div class="close-modal" onclick="closeHelpAssistant()" style="top: 20px; right: 20px;">✕</div>
+        <div class="close-modal" onclick="closeHelpAssistant()">&times;</div>
         <h2 style="color:#1F6B4F; margin: 0; font-size: 20px; display: flex; align-items: center; gap: 10px;">
           <span style="font-size: 24px;">🤖</span> Patient Help Assistant
         </h2>
@@ -2843,8 +2827,7 @@
             style="flex: 1; border: none; background: transparent; outline: none; font-size: 14px; color: #1e293b; padding: 8px 0;">
           <button onclick="sendHelpMessage()"
             style="background: #1F6B4F; border: none; width: 32px; height: 32px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;"
-            onmouseover="this.style.background='#185741'"
-            onmouseout="this.style.background='#1F6B4F'">
+            onmouseover="this.style.background='#185741'" onmouseout="this.style.background='#1F6B4F'">
             <span style="font-size: 16px;">➔</span>
           </button>
         </div>
@@ -2855,9 +2838,9 @@
   <!-- Profile & Account Modals -->
   <div class="modal-backdrop" id="profileModalBackdrop">
     <div class="modal-container">
+      <div class="close-modal" onclick="closeProfileModal()">&times;</div>
       <div class="modal-header">
         <h3 id="profileModalTitle">My Profile</h3>
-        <button class="modal-close" onclick="closeProfileModal()">✕</button>
       </div>
       <div class="modal-body" id="profileModalBody">
         <div id="profileViewMode">
@@ -2946,9 +2929,9 @@
 
   <div class="modal-backdrop" id="pwModalBackdrop">
     <div class="modal-container" style="max-width: 400px;">
+      <div class="close-modal" onclick="closePwModal()">&times;</div>
       <div class="modal-header">
         <h3>Change Password</h3>
-        <button class="modal-close" onclick="closePwModal()">✕</button>
       </div>
       <div class="modal-body">
         <div id="pw-step1">
@@ -2989,9 +2972,9 @@
 
   <div class="modal-backdrop" id="helpModalBackdrop">
     <div class="modal-container">
+      <div class="close-modal" onclick="closeHelpModal()">&times;</div>
       <div class="modal-header">
         <h3>Help & Support</h3>
-        <button class="modal-close" onclick="closeHelpModal()">✕</button>
       </div>
       <div class="modal-body">
         <div style="display: flex; flex-direction: column; gap: 20px;">
@@ -3020,17 +3003,25 @@
   </div>
 
   <div class="modal-backdrop" id="logoutModalBackdrop">
-    <div class="modal-container" style="max-width: 360px; text-align: center; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+    <div class="modal-container"
+      style="max-width: 360px; text-align: center; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+      <div class="close-modal" onclick="closeLogoutModal()">&times;</div>
       <div class="modal-body" style="padding: 40px 32px;">
-        <h3 style="margin-bottom: 12px; color: #1a202c; font-size: 20px; font-weight: 700; border: none; padding: 0; margin-top: 0;">Confirm Logout</h3>
-        <p style="color: #64748b; font-size: 14px; margin-bottom: 32px; line-height: 1.5; margin-top: 0;">Are you sure you want to log out?</p>
+        <h3
+          style="margin-bottom: 12px; color: #1a202c; font-size: 20px; font-weight: 700; border: none; padding: 0; margin-top: 0;">
+          Confirm Logout</h3>
+        <p style="color: #64748b; font-size: 14px; margin-bottom: 32px; line-height: 1.5; margin-top: 0;">Are you sure
+          you want to log out?</p>
         <div style="display: flex; gap: 12px; justify-content: center;">
-          <button style="flex: 1; background: #dc2626; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 14px; margin-top: 0;" 
-                  onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='#dc2626'"
-                  onclick="executeLogout()">Logout</button>
-          <button style="flex: 1; background: #ffffff; color: #475569; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 14px; margin-top: 0;" 
-                  onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#e2e8f0'"
-                  onclick="closeLogoutModal()">Cancel</button>
+          <button
+            style="flex: 1; background: #dc2626; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 14px; margin-top: 0;"
+            onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='#dc2626'"
+            onclick="executeLogout()">Logout</button>
+          <button
+            style="flex: 1; background: #ffffff; color: #475569; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 14px; margin-top: 0;"
+            onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'"
+            onmouseout="this.style.background='#ffffff'; this.style.borderColor='#e2e8f0'"
+            onclick="closeLogoutModal()">Cancel</button>
         </div>
       </div>
     </div>

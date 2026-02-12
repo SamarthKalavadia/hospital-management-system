@@ -421,6 +421,29 @@
       width: 420px;
       max-width: 92%;
       box-shadow: 0 30px 60px rgba(0, 0, 0, .3);
+      position: relative;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      cursor: pointer;
+      font-size: 18px;
+      color: #5a7866;
+      background: #f3f8f5;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .close-modal:hover {
+      color: #E53935;
+      background-color: rgba(229, 57, 53, 0.08);
     }
 
     .modal-content h3 {
@@ -2343,10 +2366,8 @@
   <!-- Patient Profile Drawer -->
   <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
   <div class="drawer" id="patientDrawer">
-    <button class="drawer-close" onclick="closeDrawer()">✕</button>
-
-    <!-- Centered Card Container -->
-    <div class="drawer-card">
+    <div class="drawer-card" style="position: relative;">
+      <div class="close-modal" onclick="closeDrawer()">&times;</div>
       <div class="drawer-header">
         <h2 class="drawer-patient-name" id="drawerName">Patient Name</h2>
         <span class="drawer-uhid-text" id="drawerUHID">UHID: --</span>
@@ -2409,6 +2430,7 @@
   <!-- Update Email Modal -->
   <div class="modal" id="updateEmailModal">
     <div class="modal-content" style="width: 400px; padding: 32px; border-radius: 20px;">
+      <div class="close-modal" onclick="closeUpdateEmailModal()">&times;</div>
       <h3 id="ueTitle" style="color:#155c3b; margin-bottom: 8px;">Activate Patient Account</h3>
       <p style="font-size: 13px; color: #6b8a7a; margin-bottom: 24px;">Enter a valid email address to enable digital
         access for this patient.</p>
@@ -2438,7 +2460,9 @@
 
   <!-- Prescription Modal -->
   <div class="modal" id="prescriptionModal">
-    <div class="modal-content" style="width: 750px; max-width: 94%; max-height: 90vh; overflow-y: auto;">
+    <div class="modal-content"
+      style="width: 750px; max-width: 94%; max-height: 90vh; overflow-y: auto; position: relative;">
+      <div class="close-modal" onclick="closePresModal()">&times;</div>
       <form id="prescriptionForm" onsubmit="event.preventDefault(); savePrescription();">
         <div class="patient-header" style="display:flex;align-items:center;gap:20px;">
           <button type="button" onclick="closePresModal()"
@@ -2451,7 +2475,6 @@
             <input type="hidden" id="presPatientGender" value="">
             <input type="hidden" id="presVisitType" value="first">
           </div>
-          <button type="button" onclick="closePresModal()" class="close-modal-x">✕</button>
         </div>
 
         <!-- Symptoms Field -->
@@ -2498,14 +2521,14 @@
     </div>
   </div>
   <div class="modal" id="updateStockModal">
-    <div class="modal-content" style="width: 400px; max-width: 94%;">
+    <div class="modal-content" style="width: 400px; max-width: 94%; position: relative;">
+      <div class="close-modal" onclick="closeUpdateStockModal()">&times;</div>
       <form id="updateStockForm" onsubmit="event.preventDefault(); saveStockUpdate();">
         <div class="patient-header">
           <div>
             <h3>Update Stock</h3>
             <p id="updateMedName" style="color:#6b8a7a;font-size:14px">Medicine Name</p>
           </div>
-          <button type="button" onclick="closeUpdateStockModal()" class="close-modal-x">✕</button>
         </div>
 
         <div style="margin-bottom:16px">
@@ -2535,7 +2558,8 @@
 
   <!-- Schedule Appointment Modal -->
   <div class="modal" id="scheduleModal">
-    <div class="modal-content" style="width: 400px; max-width: 94%;">
+    <div class="modal-content" style="width: 400px; max-width: 94%; position: relative;">
+      <div class="close-modal" onclick="closeScheduleModal()">&times;</div>
       <form id="scheduleForm" onsubmit="event.preventDefault(); bookDoctorAppointment();">
         <div class="patient-header" style="display:flex;align-items:center;gap:20px;">
           <button type="button" onclick="closeScheduleModal()"
@@ -2545,7 +2569,6 @@
             <h3 style="margin:0;line-height:1.2;font-size:20px">Schedule Appointment</h3>
             <p id="schedulePatientName" style="color:#6b8a7a;font-size:14px;margin:0;margin-top:4px">Patient Name</p>
           </div>
-          <button type="button" onclick="closeScheduleModal()" class="close-modal-x">✕</button>
         </div>
 
         <div style="margin-bottom:16px">
@@ -2579,7 +2602,8 @@
 
   <!-- View Prescription Modal -->
   <div class="modal" id="viewPresModal">
-    <div class="modal-content" style="width: 600px; max-width: 94%;">
+    <div class="modal-content" style="width: 600px; max-width: 94%; position: relative;">
+      <div class="close-modal" onclick="closeViewPresModal()">&times;</div>
       <div class="patient-header" style="display:flex;align-items:center;gap:20px;">
         <button onclick="closeViewPresModal()"
           style="background:#e8f5e9;border:none;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer;color:#155c3b;display:flex;align-items:center;justify-content:center;transition:0.2s;flex-shrink:0"
@@ -2588,7 +2612,6 @@
           <h3 style="margin:0;line-height:1.2;font-size:20px">Prescription Details</h3>
           <p id="viewPresInfo" style="color:#6b8a7a;font-size:14px;margin:0;margin-top:4px">--</p>
         </div>
-        <button onclick="closeViewPresModal()" class="close-modal-x">✕</button>
       </div>
 
       <div style="margin-bottom:20px">
@@ -5031,6 +5054,7 @@
   <div class="modal" id="logoutModal">
     <div class="modal-content"
       style="width: 360px; text-align: center; padding: 40px 32px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+      <div class="close-modal" onclick="closeLogoutModal()">&times;</div>
       <h3 style="margin-bottom: 12px; color: #1a202c; font-size: 20px; font-weight: 700; margin-top: 0;">Confirm Logout
       </h3>
       <p style="color: #64748b; font-size: 14px; margin-bottom: 32px; line-height: 1.5; margin-top: 0;">Are you sure you
