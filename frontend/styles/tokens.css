@@ -524,8 +524,10 @@ a:hover {
     width: 100%;
 }
 
+
 .password-wrapper input {
     padding-right: 48px !important;
+    margin-bottom: 0 !important;
 }
 
 .toggle-password {
