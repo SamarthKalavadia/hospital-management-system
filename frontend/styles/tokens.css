@@ -522,12 +522,13 @@ a:hover {
 .password-wrapper {
     position: relative;
     width: 100%;
+    margin-bottom: 14px;
 }
-
 
 .password-wrapper input {
     padding-right: 48px !important;
     margin-bottom: 0 !important;
+    display: block !important;
 }
 
 .toggle-password {
