@@ -533,6 +533,22 @@
       padding: 6px 4px;
     }
 
+    /* Standardized Section Headers */
+    .section-title {
+      font-size: 22px;
+      color: #155c3b;
+      margin-bottom: 6px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .section-subtitle {
+      color: #6b8a7a;
+      margin-bottom: 14px;
+      font-size: 13px;
+      margin: 0;
+    }
+
     #patients h3 {
       font-size: 22px;
       color: #155c3b;
@@ -1657,8 +1673,8 @@
       <main class="main">
 
         <section id="overview">
-          <h2 style="color:#155c3b;margin-bottom:6px">Hospital Overview</h2>
-          <p id="dashboardDate" style="font-size:13px;color:#4f6f60;margin-bottom:28px"></p>
+          <h2 class="section-title">Hospital Overview</h2>
+          <p id="dashboardDate" class="section-subtitle" style="margin-bottom:28px"></p>
 
           <div class="cards">
             <div class="card" onclick="show('patients')" style="cursor:pointer">
@@ -1686,8 +1702,8 @@
         <section id="patients" style="display:none">
           <div class="appointments-header">
             <div>
-              <h3>Patients</h3>
-              <p class="subtitle" style="margin:0">List of registered patients under your care</p>
+              <h3 class="section-title">Patients</h3>
+              <p class="section-subtitle">List of registered patients under your care</p>
             </div>
             <div>
               <input type="text" id="patientSearch" onkeyup="filterPatients()" placeholder="Search..."
@@ -2300,8 +2316,8 @@
           <div class="appointments-header"
             style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
             <div>
-              <h3 style="color:#155c3b;margin-bottom:6px">Prescription Records</h3>
-              <p style="font-size:13px;color:#4f6f60;margin:0">Patient History & Management</p>
+              <h3 class="section-title">Prescription Records</h3>
+              <p class="section-subtitle">Patient History & Management</p>
             </div>
             <div>
               <input type="text" id="presSearch" onkeyup="loadPrescriptions()" placeholder="Search Patient..."
@@ -2317,8 +2333,8 @@
             <div class="appointments-header"
               style="margin-bottom:0px; display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <h3 style="color:#155c3b;margin-bottom:6px;font-weight:600">Inventory & Medicine Stock</h3>
-                <p style="font-size:13px;color:#4f6f60;margin:0">Monitoring stock levels and availability in real-time
+                <h3 class="section-title">Inventory & Medicine Stock</h3>
+                <p class="section-subtitle">Monitoring stock levels and availability in real-time
                 </p>
               </div>
               <div class="search-box" style="margin-left:auto;">
@@ -4278,8 +4294,8 @@
       container.innerHTML = `
         <div class="appointments-header">
           <div>
-            <h3 style="color:#155c3b;margin-bottom:6px">Appointments</h3>
-            <p style="font-size:13px;color:#4f6f60;margin:0">Select date to view appointments</p>
+            <h3 class="section-title">Appointments</h3>
+            <p class="section-subtitle">Select date to view appointments</p>
           </div>
           <div>
             <input type="date" id="appointmentsDate" style="padding:8px 12px;border-radius:10px;border:1px solid #ddd">
