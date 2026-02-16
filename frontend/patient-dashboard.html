@@ -7,7 +7,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="js/toast.js" defer></script>
   <script src="js/validation.js" defer></script>
-  <script src="js/password-toggle.js" defer></script>
   <link rel="stylesheet" href="styles/tokens.css">
 
   <style>
@@ -120,7 +119,7 @@
 
     /* DASHBOARD WRAPPER */
     .dashboard {
-      padding: 120px 24px 40px;
+      padding: 120px 28px 40px;
       display: flex;
       justify-content: center;
     }
@@ -421,15 +420,161 @@
       font-weight: 600;
     }
 
+    /* HAMBURGER BUTTON */
+    .menu-toggle {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    .menu-toggle span {
+      display: block;
+      width: 24px;
+      height: 3px;
+      background: #155c3b;
+      border-radius: 3px;
+      transition: 0.3s;
+    }
+
     @media (max-width: 900px) {
       .layout {
         grid-template-columns: 1fr;
+        gap: 24px;
       }
 
+      /* SHOW HAMBURGER MENU */
+      .menu-toggle {
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* SIDEBAR DRAWER */
       .sidebar {
-        position: relative;
-        height: auto;
-        margin-left: 0;
+        display: none;
+        position: fixed;
+        top: 72px;
+        /* Align with bottom of top-bar */
+        left: 0;
+        width: 280px;
+        height: calc(100vh - 72px);
+        background: #ffffff;
+        z-index: 1000;
+        flex-direction: column;
+        padding: 24px;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+        border-right: 1px solid #eaf4ee;
+        overflow-y: auto;
+        border-radius: 0 16px 16px 0;
+        margin: 0;
+      }
+
+      .sidebar.active {
+        display: flex;
+        animation: slideRight 0.3s ease forwards;
+      }
+
+      @keyframes slideRight {
+        from {
+          transform: translateX(-100%);
+          opacity: 0;
+        }
+
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      /* RESET SIDEBAR ITEMS */
+      .sidebar button {
+        width: 100%;
+        text-align: left;
+        margin-bottom: 12px;
+        padding: 14px 20px;
+        border-radius: 12px;
+        flex: none;
+        white-space: normal;
+      }
+
+      .sidebar button.active {
+        background: #eaf4ee;
+        /* Softer active state for drawer */
+        color: #155c3b;
+        border-left: 4px solid #155c3b;
+      }
+
+      .sidebar-profile {
+        width: 100%;
+        margin-bottom: 24px;
+        padding: 12px 16px;
+        border: 1px solid #f1f5f9;
+        flex: none;
+      }
+
+      /* SHOW SPACER */
+      .sidebar .spacer {
+        display: block;
+        flex-grow: 1;
+      }
+
+      .sidebar .logout-fixed {
+        margin-top: auto;
+        width: 100%;
+        text-align: center;
+        padding: 14px;
+        display: block;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .main {
+        padding: 20px;
+      }
+
+      .cards {
+        gap: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .top-bar {
+        padding: 0 16px;
+      }
+
+      .dashboard {
+        padding: 96px 16px 30px !important;
+      }
+
+      .brand span {
+        font-size: 16px;
+        min-width: 0;
+        white-space: normal;
+        line-height: 1.2;
+      }
+
+      .brand {
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .logo {
+        width: 32px;
+        height: 32px;
+      }
+
+      .cards {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* Full width drawer on very small screens */
+      .sidebar {
+        width: 85vw;
+        border-radius: 0 16px 16px 0;
       }
     }
 
@@ -914,7 +1059,24 @@
       color: #1a202c;
     }
 
+    .modal-close {
+      background: #f1f5f9;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #64748b;
+      transition: all 0.2s ease;
+    }
 
+    .modal-close:hover {
+      color: #E53935;
+      background-color: rgba(229, 57, 53, 0.08);
+    }
 
     .modal-body {
       padding: 32px;
@@ -1034,7 +1196,8 @@
     }
 
     /* RESPONSIVE DESIGN */
-    @media (max-width: 1024px) {
+    /* DISABLED DUPLICATE LAYOUT OVERRIDE */
+    @media (max-width: 0px) {
       .dashboard {
         padding: 90px 20px 30px;
       }
@@ -1045,32 +1208,34 @@
       }
     }
 
-    @media (max-width: 900px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
 
-      .sidebar {
-        position: relative;
-        height: auto;
-        margin-left: 0;
-        top: 0;
-        margin-bottom: 24px;
-      }
-    }
 
     @media (max-width: 600px) {
-      .brand span {
-        font-size: 0.95rem;
+      .top-bar {
+        padding: 8px 16px;
+        min-height: 72px;
+        /* Standard height matched */
+        height: auto;
+        flex-wrap: wrap;
+        /* Allow wrapping */
       }
 
-      .top-bar {
-        padding: 0 16px;
-        height: 64px;
+      .brand {
+        flex: 1;
+        min-width: 0;
+        /* Allow shrinking */
+      }
+
+      .brand span {
+        font-size: 15px;
+        /* Slightly smaller to fit */
+        white-space: normal;
+        line-height: 1.2;
       }
 
       .dashboard {
-        padding: 80px 16px 24px;
+        padding: 96px 16px 24px;
+        /* Ensure content starts below top bar */
       }
 
       /* Cards */
@@ -1089,8 +1254,6 @@
         min-width: 600px;
       }
 
-      /* Force scroll on small screens */
-
       /* Modals */
       .modal-container,
       .modal-content {
@@ -1102,26 +1265,6 @@
 
       .modal-header h3 {
         font-size: 1.1rem;
-      }
-
-      /* Sidebar Profile Grid */
-      .sidebar .sidebar-profile>div>div:last-child {
-        grid-template-columns: repeat(4, 1fr) !important;
-      }
-
-      .sidebar .sidebar-profile button {
-        flex-direction: column;
-        padding: 6px;
-      }
-
-      .sidebar .sidebar-profile button span:first-child {
-        font-size: 16px;
-        margin-bottom: 4px;
-      }
-
-      .sidebar .sidebar-profile button span:last-child {
-        display: none;
-        /* Hide text on very small screens if needed, or keep it */
       }
     }
 
@@ -1142,6 +1285,11 @@
 
   <div class="top-bar">
     <div class="brand">
+      <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
       <div class="logo">
         <img src="assets/logo.png" alt="Samyak Ayurvedic Hospital Logo">
       </div>
@@ -2032,6 +2180,12 @@
       document.querySelectorAll(".sidebar button[data-target]").forEach(b => {
         b.classList.toggle("active", b.dataset.target === id);
       });
+
+      // Close sidebar on mobile selection
+      const sidebar = document.querySelector('.sidebar');
+      if (sidebar && sidebar.classList.contains('active')) {
+        toggleSidebar();
+      }
     }
 
     function logout() {
@@ -2710,7 +2864,7 @@
   <!-- Feedback Modal -->
   <div class="booking-modal" id="feedbackModal">
     <div class="modal-content">
-      <div class="close-modal" onclick="closeFeedbackModal()">&times;</div>
+      <div class="close-modal" onclick="closeFeedbackModal()">✕</div>
       <h2 style="color:#155c3b; margin-bottom:8px;">Report Recovery</h2>
       <p style="font-size:13px; color:#6b8a7a; margin-bottom:20px;">Your response helps your doctor understand recovery
         progress.</p>
@@ -2747,7 +2901,7 @@
   <!-- View Feedback Modal -->
   <div class="booking-modal" id="viewFeedbackModal" style="z-index: 3000;">
     <div class="modal-content" style="max-width: 450px;">
-      <div class="close-modal" onclick="closeViewFeedbackModal()">&times;</div>
+      <div class="close-modal" onclick="closeViewFeedbackModal()">✕</div>
       <h2 style="color:#155c3b; margin-bottom:24px; display:flex; align-items:center; gap:10px;">
         <span>📊</span> Recovery Report
       </h2>
@@ -2770,7 +2924,7 @@
     <div class="modal-content"
       style="max-width: 500px; height: 80vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 24px;">
       <div style="padding: 24px; background: #E8F3EE; border-bottom: 1px solid #D7E7DF; position: relative;">
-        <div class="close-modal" onclick="closeHelpAssistant()">&times;</div>
+        <div class="close-modal" onclick="closeHelpAssistant()" style="top: 20px; right: 20px;">✕</div>
         <h2 style="color:#1F6B4F; margin: 0; font-size: 20px; display: flex; align-items: center; gap: 10px;">
           <span style="font-size: 24px;">🤖</span> Patient Help Assistant
         </h2>
@@ -2839,9 +2993,9 @@
   <!-- Profile & Account Modals -->
   <div class="modal-backdrop" id="profileModalBackdrop">
     <div class="modal-container">
-      <div class="close-modal" onclick="closeProfileModal()">&times;</div>
       <div class="modal-header">
         <h3 id="profileModalTitle">My Profile</h3>
+        <button class="modal-close" onclick="closeProfileModal()">✕</button>
       </div>
       <div class="modal-body" id="profileModalBody">
         <div id="profileViewMode">
@@ -2930,9 +3084,9 @@
 
   <div class="modal-backdrop" id="pwModalBackdrop">
     <div class="modal-container" style="max-width: 400px;">
-      <div class="close-modal" onclick="closePwModal()">&times;</div>
       <div class="modal-header">
         <h3>Change Password</h3>
+        <button class="modal-close" onclick="closePwModal()">✕</button>
       </div>
       <div class="modal-body">
         <div id="pw-step1">
@@ -2956,21 +3110,11 @@
           </div>
           <div class="form-group">
             <label>New Password</label>
-            <div class="password-wrapper">
-                <input type="password" id="pw-new" placeholder="••••••••">
-                <button type="button" class="toggle-password" aria-label="Toggle password visibility">
-                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                </button>
-            </div>
+            <input type="password" id="pw-new" placeholder="••••••••">
           </div>
           <div class="form-group">
             <label>Confirm New Password</label>
-            <div class="password-wrapper">
-                <input type="password" id="pw-confirm" placeholder="••••••••">
-                <button type="button" class="toggle-password" aria-label="Toggle password visibility">
-                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                </button>
-            </div>
+            <input type="password" id="pw-confirm" placeholder="••••••••">
           </div>
           <p id="pw-error"
             style="color: #c62828; font-size: 12px; margin-top: -12px; margin-bottom: 12px; font-weight: 600;"></p>
@@ -2983,9 +3127,9 @@
 
   <div class="modal-backdrop" id="helpModalBackdrop">
     <div class="modal-container">
-      <div class="close-modal" onclick="closeHelpModal()">&times;</div>
       <div class="modal-header">
         <h3>Help & Support</h3>
+        <button class="modal-close" onclick="closeHelpModal()">✕</button>
       </div>
       <div class="modal-body">
         <div style="display: flex; flex-direction: column; gap: 20px;">
@@ -3016,7 +3160,6 @@
   <div class="modal-backdrop" id="logoutModalBackdrop">
     <div class="modal-container"
       style="max-width: 360px; text-align: center; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
-      <div class="close-modal" onclick="closeLogoutModal()">&times;</div>
       <div class="modal-body" style="padding: 40px 32px;">
         <h3
           style="margin-bottom: 12px; color: #1a202c; font-size: 20px; font-weight: 700; border: none; padding: 0; margin-top: 0;">
@@ -3037,6 +3180,12 @@
       </div>
     </div>
   </div>
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.classList.toggle('active');
+    }
+  </script>
 </body>
 
 </html>
