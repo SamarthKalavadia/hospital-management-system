@@ -7,7 +7,9 @@ const DoctorSchema = new mongoose.Schema({
   email: String,
   password: String,
   role: { type: String, default: "doctor" },
-  isActive: { type: Boolean, default: true }
+  isActive: { type: Boolean, default: true },
+  otp: String,
+  otpExpiry: Number
 });
 
 // Hash password before save

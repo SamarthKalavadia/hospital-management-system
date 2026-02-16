@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const fs = require('fs');
 const path = require('path');
 const User = require("../models/User");
+const Doctor = require("../models/Doctor");
 const Appointment = require("../models/Appointment");
 const Prescription = require("../models/Prescription");
 const auth = require('../middleware/auth');
@@ -915,9 +916,16 @@ router.post("/forgot-password", async (req, res) => {
     const { email } = req.body;
     if (!email) return res.json({ success: false, message: "Email required" });
 
-    const user = await User.findOne({ email });
+    let user = await User.findOne({ email });
+    let isDoctor = false;
+
     if (!user) {
-      // Security: Don't reveal user existence, but for now helpful message
+      // Check if it's a doctor
+      user = await Doctor.findOne({ email: { $regex: new RegExp(`^${email.trim()}$`, 'i') } });
+      isDoctor = !!user;
+    }
+
+    if (!user) {
       return res.json({ success: false, message: "User not found" });
     }
 
@@ -929,7 +937,7 @@ router.post("/forgot-password", async (req, res) => {
     // 1. Send immediate success response
     res.json({ success: true, message: "OTP is being sent to your email" });
 
-    // 2. Send OTP email in background (non-blocking)
+    // 2. Send OTP email in background
     (async () => {
       try {
         const sendOtp = require("../utils/sendOtp");
@@ -950,7 +958,13 @@ router.post("/reset-password-public", async (req, res) => {
     const { email, otp, newPassword } = req.body;
     if (!email || !otp || !newPassword) return res.json({ success: false, message: "Missing fields" });
 
-    const user = await User.findOne({ email });
+    let user = await User.findOne({ email });
+    
+    if (!user) {
+         // Check if it's a doctor
+         user = await Doctor.findOne({ email: { $regex: new RegExp(`^${email.trim()}$`, 'i') } });
+    }
+
     if (!user) return res.json({ success: false, message: "User not found" });
 
     if (!user.otp || !user.otpExpiry || Date.now() > user.otpExpiry || user.otp !== otp) {
