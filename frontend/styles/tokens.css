@@ -302,6 +302,29 @@ button:focus {
   padding: var(--space-lg);
 }
 
+.close-modal {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 50;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-normal);
+}
+
+.close-modal:hover {
+  color: var(--color-danger);
+  background-color: var(--color-danger-light);
+}
+
 /* ============================= */
 /* GLOBAL MODAL SYSTEM */
 /* ============================= */
@@ -324,6 +347,7 @@ button:focus {
   max-width: 90vw;
   max-height: 90vh;
   overflow: auto;
+  position: relative;
 }
 
 .modal-header {
@@ -409,12 +433,15 @@ h6 {
 h1 {
   font-size: var(--font-2xl);
 }
+
 h2 {
   font-size: var(--font-xl);
 }
+
 h3 {
   font-size: var(--font-lg);
 }
+
 h4 {
   font-size: var(--font-md);
 }
@@ -445,18 +472,23 @@ a:hover {
 .text-primary {
   color: var(--color-primary);
 }
+
 .text-secondary {
   color: var(--text-secondary);
 }
+
 .text-muted {
   color: var(--text-muted);
 }
+
 .text-white {
   color: var(--text-white);
 }
+
 .text-danger {
   color: var(--color-danger);
 }
+
 .text-success {
   color: var(--color-success);
 }
@@ -464,9 +496,11 @@ a:hover {
 .bg-primary {
   background: var(--color-primary);
 }
+
 .bg-soft {
   background: var(--bg-soft);
 }
+
 .bg-card {
   background: var(--bg-card);
 }
@@ -474,9 +508,11 @@ a:hover {
 .shadow-soft {
   box-shadow: var(--shadow-soft);
 }
+
 .shadow-card {
   box-shadow: var(--shadow-card);
 }
+
 .shadow-modal {
   box-shadow: var(--shadow-modal);
 }
@@ -520,44 +556,44 @@ a:hover {
 
 /* ================= PASSWORD TOGGLE SYSTEM ================= */
 .password-wrapper {
-    position: relative;
-    width: 100%;
-    margin-bottom: 14px;
+  position: relative;
+  width: 100%;
+  margin-bottom: 14px;
 }
 
 .password-wrapper input {
-    padding-right: 48px !important;
-    margin-bottom: 0 !important;
-    display: block !important;
+  padding-right: 48px !important;
+  margin-bottom: 0 !important;
+  display: block !important;
 }
 
 .toggle-password {
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    cursor: pointer;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    height: 24px;
-    width: 24px;
-    color: #2e6f4f;
-    padding: 0;
-    z-index: 10;
-    margin: 0;
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  width: 24px;
+  color: #2e6f4f;
+  padding: 0;
+  z-index: 10;
+  margin: 0;
 }
 
 .toggle-password:hover {
-    color: #1f4d36;
+  color: #1f4d36;
 }
 
 .toggle-password svg {
-    width: 20px;
-    height: 20px;
-    stroke: currentColor;
-    fill: none;
-    pointer-events: none;
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  fill: none;
+  pointer-events: none;
 }
