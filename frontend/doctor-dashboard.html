@@ -486,6 +486,22 @@
         width: 100% !important;
       }
 
+      /* Fix for upcoming appointment card on mobile */
+      .upcoming {
+        padding: 16px;
+        margin-top: 20px;
+      }
+
+      .appointment {
+        padding: 16px;
+      }
+
+      .appointment strong {
+        font-size: 24px;
+        display: block;
+        margin-bottom: 4px;
+      }
+
       /* Mobile Table Card View - Grid Layout */
       #patients thead {
         display: none;
@@ -1707,7 +1723,7 @@
       .presc-grid {
         grid-template-columns: 1fr !important;
       }
-      
+
       .dashboard {
         padding-bottom: 80px;
       }
@@ -3261,9 +3277,16 @@
               renderDoctorAppointmentsTab(false, localDate);
             };
             upcomingContainer.innerHTML = `
-              <strong>${upcoming.time}</strong>
-              <p>${upcoming.patientName || 'Patient'}</p>
-              <p style="font-size:13px;color:#4f6f60;margin-top:4px">Date: ${new Date(upcoming.date).toLocaleDateString()}</p>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                   <strong style="font-size:24px; color:#155c3b; display:block; line-height:1.2; margin-bottom:4px;">${upcoming.time}</strong>
+                   <div style="font-size:16px; font-weight:600; color:#2c3e50;">${upcoming.patientName || 'Patient'}</div>
+                   <div style="font-size:13px; color:#4f6f60; margin-top:2px;">${new Date(upcoming.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</div>
+                </div>
+                <div style="background:#fff; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#155c3b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5l7 7-7 7"></path></svg>
+                </div>
+              </div>
             `;
           } else {
             upcomingContainer.innerHTML = `<p style="text-align:center;color:#6b8a7a;padding:20px 0">No upcoming appointments</p>`;
@@ -4198,7 +4221,7 @@
           const rowId = `pbody-${i}`;
           const iconId = `picon-${i}`;
           const delay = Math.min(i * 0.05, 0.5); // Cap delay
-            
+
           return `
             <div class="patient-card" style="animation: slideInUp 0.4s ease forwards; animation-delay: ${delay}s">
                 <div class="pc-header" onclick="toggleAccordion('${rowId}', '${iconId}')">
@@ -5212,11 +5235,7 @@
           onmouseout="this.style.background='#ffffff'; this.style.borderColor='#e2e8f0'">Cancel</button>
       </div>
     </div>
-    function toggleSidebar() {
-      const sidebar = document.querySelector('.sidebar');
-      sidebar.classList.toggle('active');
-    }
-  </script>
+
 </body>
 
 </html>
