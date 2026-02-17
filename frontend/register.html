@@ -74,13 +74,15 @@
       }
 
       .card {
-        width: 420px;
-        background: var(--bg-card);
-        border-radius: 22px;
-        padding: 36px;
-        box-shadow: var(--shadow-card);
-        animation: fadeIn 0.4s ease forwards;
-      }
+      width: 100%;
+      max-width: 420px;
+      margin: 20px;
+      background: var(--bg-card);
+      border-radius: 22px;
+      padding: 36px;
+      box-shadow: var(--shadow-card);
+      animation: fadeIn 0.4s ease forwards;
+    }
 
       @keyframes fadeIn {
         from {
@@ -197,7 +199,16 @@
         background: var(--bg-muted);
         text-decoration: none;
       }
-    </style>
+      @media (max-width: 480px) {
+      .card {
+        padding: 24px;
+      }
+
+      .row {
+        flex-direction: column;
+      }
+    }
+  </style>
   </head>
 
   <body>

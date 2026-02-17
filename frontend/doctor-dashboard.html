@@ -1693,6 +1693,10 @@
       .presc-grid {
         grid-template-columns: 1fr !important;
       }
+      
+      .dashboard {
+        padding-bottom: 80px;
+      }
     }
   </style>
 </head>
@@ -5156,7 +5160,11 @@
           onmouseout="this.style.background='#ffffff'; this.style.borderColor='#e2e8f0'">Cancel</button>
       </div>
     </div>
-  </div>
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.classList.toggle('active');
+    }
+  </script>
 </body>
 
 </html>

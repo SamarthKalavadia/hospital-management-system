@@ -76,12 +76,14 @@
     }
 
     .card {
-      width: 420px;
+      width: 100%;
+      max-width: 420px;
       background: var(--bg-card);
       border-radius: 22px;
       padding: 36px;
       box-shadow: var(--shadow-card);
       animation: fadeIn .4s ease forwards;
+      margin: 20px;
     }
 
     @keyframes fadeIn {
@@ -216,6 +218,15 @@
       border-radius: 8px;
       text-decoration: none;
       font-weight: 600;
+    }
+    @media (max-width: 480px) {
+      .card {
+        padding: 24px;
+      }
+
+      h2 {
+        font-size: 22px;
+      }
     }
   </style>
 </head>
