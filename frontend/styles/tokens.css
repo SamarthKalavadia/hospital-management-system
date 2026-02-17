@@ -54,25 +54,22 @@
   --bg-overlay: rgba(0, 0, 0, 0.4);
 
   /* ============================= */
-  /* ============================= */
   /* TEXT COLORS */
   /* ============================= */
 
   --text-primary: #1e2a26;
-  --text-secondary: #4a5c56; /* Darkened from #5a6b65 */
-  --text-muted: #5c6b65;    /* Darkened from #8c9b96 for 4.5:1 */
+  --text-secondary: #5a6b65;
+  --text-muted: #8c9b96;
   --text-white: #ffffff;
-  --text-dark: #1a2e3b;     /* Darkened from #2c3e50 */
-  --text-label: #5a7065;    /* Added for consistency */
+  --text-dark: #2c3e50;
 
   /* ============================= */
   /* BORDER COLORS */
   /* ============================= */
 
-  --border-light: #cbd5e1;  /* Darkened from #e1e8e5 for 3:1 UI contrast */
-  --border-medium: #94a3b8; /* Darkened from #d0ddd7 */
-  --border-dark: #64748b;   /* Darkened from #b8c9c1 */
-  --border-subtle: #94a3b8; /* Added explicitly for inputs */
+  --border-light: #e1e8e5;
+  --border-medium: #d0ddd7;
+  --border-dark: #b8c9c1;
 
   /* ============================= */
   /* SPACING SYSTEM */
