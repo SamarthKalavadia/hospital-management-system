@@ -472,6 +472,20 @@
         gap: 16px;
       }
 
+      .appointments-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .appointments-header>div {
+        width: 100%;
+      }
+
+      .appointments-header input {
+        width: 100% !important;
+      }
+
       /* Mobile Table Card View - Grid Layout */
       #patients thead {
         display: none;
@@ -2028,6 +2042,34 @@
               background: #f4f9f6;
             }
 
+            /* Responsive Text Alignment Fix */
+            .pc-header>div:last-child {
+              display: flex;
+              align-items: center;
+              gap: 12px;
+            }
+
+            @media (max-width: 600px) {
+              .pc-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+              }
+
+              .pc-header>div:last-child {
+                width: 100%;
+                justify-content: space-between;
+                flex-wrap: nowrap;
+                display: flex;
+              }
+
+              .pc-name {
+                white-space: nowrap;
+                width: auto;
+                max-width: none;
+              }
+            }
+
             .pc-name {
               font-weight: 700;
               font-size: 16px;
@@ -2056,7 +2098,7 @@
               font-size: 13px;
               color: #8fab9f;
               font-weight: 500;
-              margin-right: 8px;
+              margin-right: 0;
             }
 
             .toggle-icon {
@@ -4116,17 +4158,27 @@
         const data = await r.json();
 
         const groups = {};
+
+        // Helper to find patient info
+        const getPatientInfo = (pid) => {
+          return allPatients.find(u => String(u._id || u.id) === String(pid)) || {};
+        };
+
         data.forEach(p => {
           if (p.patientId && !patientExists(p.patientId)) return; // Skip ghost data
 
-          const pid = p.patientId || p.patientName || 'unknown';
+          const pid = p.patientId;
+          const patientData = getPatientInfo(pid);
+          const fullName = patientData.name || p.patientName || 'Unknown';
+
           if (!groups[pid]) groups[pid] = {
-            id: p.patientId || '',
-            name: p.patientName || 'Unknown',
+            id: pid || '',
+            name: fullName,
             lastDate: new Date(0),
             count: 0,
             list: []
           };
+
           groups[pid].list.push(p);
           groups[pid].count++;
           const d = new Date(p.createdAt || p.date);
