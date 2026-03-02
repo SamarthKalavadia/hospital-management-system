@@ -26,7 +26,10 @@ const transporter = {
     try {
       const msg = {
         to: mailOptions.to,
-        from: mailOptions.from || process.env.EMAIL_USER,
+        from: {
+          email: mailOptions.from || process.env.SENDGRID_FROM_EMAIL,
+          name: "Samyak Ayurvedic Hospital"
+        },
         subject: mailOptions.subject,
         html: mailOptions.html,
       };
