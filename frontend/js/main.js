@@ -5,8 +5,8 @@ function login() {
 
   const url =
     role === "doctor"
-      ? "https://hospital-management-system-production-06ba.up.railway.app/api/doctors/login"
-      : "https://hospital-management-system-production-06ba.up.railway.app/api/users/login";
+      ? "https://hospital-management-system-production-9372.up.railway.app/api/doctors/login"
+      : "https://hospital-management-system-production-9372.up.railway.app/api/users/login";
 
   fetch(url, {
     method: "POST",
@@ -59,7 +59,7 @@ function registerUser() {
   }
 
   fetch(
-    "https://hospital-management-system-production-06ba.up.railway.app/api/users/register",
+    "https://hospital-management-system-production-9372.up.railway.app/api/users/register",
     {
       method: "POST",
       headers: {
