@@ -269,7 +269,7 @@
       <div id="googleSection">
         <div class="or">OR</div>
 
-        <a href="https://hospital-management-system-production-9372.up.railway.app/api/auth/google" class="google-btn">
+        <a href="https://hospital-management-system.railway.internal/api/auth/google" class="google-btn">
           <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo">
           Continue with Google
         </a>
@@ -293,7 +293,7 @@
       const params = new URLSearchParams(window.location.search);
       const role = params.get("role") || "patient"; // default patient
 
-      const url = role === "doctor" ? "https://hospital-management-system-production-9372.up.railway.app/api/doctors/login" : "https://hospital-management-system-production-9372.up.railway.app/api/users/login";
+      const url = role === "doctor" ? "https://hospital-management-system.railway.internal/api/doctors/login" : "https://hospital-management-system.railway.internal/api/users/login";
 
       const res = await fetch(url, {
         method: "POST",
