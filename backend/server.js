@@ -29,6 +29,13 @@ app.use(require("cors")());
 // Serve static frontend files
 app.use(express.static(path.join(__dirname, "../frontend")));
 
+// Fallback: redirect bare /auth/google/callback → /api/auth/google/callback
+// This handles cases where GOOGLE_CALLBACK_URL was set without the /api prefix
+app.get("/auth/google/callback", (req, res) => {
+  const query = req.url.includes("?") ? req.url.substring(req.url.indexOf("?")) : "";
+  res.redirect(301, `/api/auth/google/callback${query}`);
+});
+
 // Routes
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/auth", require("./routes/googleAuth"));
