@@ -304,11 +304,6 @@ router.post("/", auth, async (req, res) => {
       }
     })();
 
-    res.json({
-      success: true,
-      message: "Appointment booked successfully",
-      appointment: newAppt
-    });
   } catch (err) {
     console.error(err);
     res.status(500).json({
@@ -779,11 +774,6 @@ router.patch("/:id/approve", auth, async (req, res) => {
       }
     })();
 
-    res.json({
-      success: true,
-      message: "Approved successfully",
-      appointment: appt
-    });
   } catch (err) {
     console.error(err);
     res.status(500).json({
@@ -865,11 +855,6 @@ router.patch("/:id/reject", auth, async (req, res) => {
       }
     })();
 
-    res.json({
-      success: true,
-      message: "Rejected successfully",
-      appointment: appt
-    });
   } catch (err) {
     console.error(err);
     res.status(500).json({

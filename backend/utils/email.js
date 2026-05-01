@@ -1,7 +1,7 @@
 const sgMail = require("@sendgrid/mail");
 
-// Initialize SendGrid with API key
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// NOTE: API key is set lazily inside sendMailWithLog() so it always picks
+// up the latest value from process.env after any credential rotation.
 
 /**
  * Transporter object for backward compatibility
@@ -19,6 +19,8 @@ const transporter = {
    * @param {Array} [mailOptions.attachments] - Email attachments (optional)
    */
   sendMailWithLog: async (mailOptions) => {
+    // Set API key on every call so credential changes take effect immediately
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     console.log("📧 Email send via SendGrid:");
     console.log("   To:", mailOptions.to);
     console.log("   Subject:", mailOptions.subject);
