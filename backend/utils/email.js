@@ -125,6 +125,15 @@ const transporter = {
       console.error("   To:", mailOptions.to);
       console.error("   Subject:", mailOptions.subject);
       console.error("   Error:", error.message);
+      console.error("   Diagnostic Configuration Info:", {
+        EMAIL_USER: process.env.EMAIL_USER ? `${process.env.EMAIL_USER.substring(0, 4)}***@${process.env.EMAIL_USER.split('@')[1]}` : "NOT SET",
+        EMAIL_PASS_LENGTH: process.env.EMAIL_PASS ? process.env.EMAIL_PASS.length : 0,
+        EMAIL_PASS_IS_PLACEHOLDER: process.env.EMAIL_PASS === "your-app-password",
+        EMAIL_HOST: process.env.EMAIL_HOST || "NOT SET",
+        EMAIL_PORT: process.env.EMAIL_PORT || "NOT SET",
+        EMAIL_SECURE: process.env.EMAIL_SECURE || "NOT SET",
+        EMAIL_FROM: process.env.EMAIL_FROM || "NOT SET"
+      });
       throw error;
     }
   },
