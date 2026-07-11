@@ -998,4 +998,39 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
+// DIAGNOSTIC EMAIL TEST ENDPOINT (Public)
+router.get("/test-email-diagnostic", async (req, res) => {
+  try {
+    const emailUtil = require('../utils/email');
+    const mailOptions = {
+      to: req.query.email || "dakshk5610@gmail.com",
+      subject: "Render Diagnostic Email Test",
+      html: "<h3>Diagnostics test working!</h3><p>If you see this, email sending works.</p>"
+    };
+    const info = await emailUtil.sendMail(mailOptions);
+    res.json({
+      success: true,
+      message: "Email sent successfully",
+      messageId: info.messageId,
+      envelope: info.envelope
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Email sending failed",
+      error: error.message,
+      stack: error.stack,
+      diagnostics: {
+        EMAIL_USER: process.env.EMAIL_USER ? `${process.env.EMAIL_USER.substring(0, 4)}***@${process.env.EMAIL_USER.split('@')[1]}` : "NOT SET",
+        EMAIL_PASS_LENGTH: process.env.EMAIL_PASS ? process.env.EMAIL_PASS.length : 0,
+        EMAIL_PASS_IS_PLACEHOLDER: process.env.EMAIL_PASS === "your-app-password",
+        EMAIL_HOST: process.env.EMAIL_HOST || "NOT SET",
+        EMAIL_PORT: process.env.EMAIL_PORT || "NOT SET",
+        EMAIL_SECURE: process.env.EMAIL_SECURE || "NOT SET",
+        EMAIL_FROM: process.env.EMAIL_FROM || "NOT SET"
+      }
+    });
+  }
+});
+
 module.exports = router;
