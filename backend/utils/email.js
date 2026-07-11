@@ -51,7 +51,8 @@ const getTransporter = async () => {
   };
 
   // Optimization: use built-in "gmail" service config if user is using Gmail
-  if (!process.env.EMAIL_HOST && user && user.endsWith("@gmail.com")) {
+  const isGmailHost = !process.env.EMAIL_HOST || process.env.EMAIL_HOST === "smtp.gmail.com";
+  if (isGmailHost && user && user.endsWith("@gmail.com")) {
     return nodemailer.createTransport({
       service: "gmail",
       auth: {
