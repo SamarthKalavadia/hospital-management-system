@@ -5,8 +5,8 @@ function login() {
 
   const url =
     role === "doctor"
-      ? "http://localhost:5001/api/doctors/login"
-      : "http://localhost:5001/api/users/login";
+      ? "https://hospital-management-system-gbr9.onrender.com/api/doctors/login"
+      : "https://hospital-management-system-gbr9.onrender.com/api/users/login";
 
   fetch(url, {
     method: "POST",
@@ -59,7 +59,7 @@ function registerUser() {
   }
 
   fetch(
-    "http://localhost:5001/api/users/register",
+    "https://hospital-management-system-gbr9.onrender.com/api/users/register",
     {
       method: "POST",
       headers: {

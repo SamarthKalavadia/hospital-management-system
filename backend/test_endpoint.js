@@ -2,7 +2,7 @@ const axios = require('axios');
 
 async function test() {
     try {
-        const res = await axios.patch('http://localhost:5001/api/patient/profile', 
+        const res = await axios.patch('https://hospital-management-system-gbr9.onrender.com/api/patient/profile', 
             { firstName: 'Test' },
             {
                 headers: {

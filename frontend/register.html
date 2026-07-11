@@ -356,7 +356,7 @@
 
         <!-- GOOGLE REGISTER -->
         <a
-          href="http://localhost:5001/api/auth/google"
+          href="https://hospital-management-system-gbr9.onrender.com/api/auth/google"
           class="google-btn"
         >
           <img
@@ -471,7 +471,7 @@
           try {
             // start registration and send OTP
             const res = await fetch(
-              "http://localhost:5001/api/users/register-init",
+              "https://hospital-management-system-gbr9.onrender.com/api/users/register-init",
               {
                 method: "POST",
                 headers: {
@@ -516,7 +516,7 @@
 
           try {
             const res = await fetch(
-              "http://localhost:5001/api/users/verify-otp",
+              "https://hospital-management-system-gbr9.onrender.com/api/users/verify-otp",
               {
                 method: "POST",
                 headers: {
@@ -574,7 +574,7 @@
 
           try {
             const res = await fetch(
-              "http://localhost:5001/api/users/resend-otp",
+              "https://hospital-management-system-gbr9.onrender.com/api/users/resend-otp",
               {
                 method: "POST",
                 headers: {
