@@ -1,0 +1,28 @@
+﻿Connected...
+Total Appointments: 4
+{
+  "id": "694fa66294b6bbd780cc62b3",
+  "date": "2025-12-27T00:00:00.000Z",
+  "status": "Pending",
+  "time": "14:56"
+}
+{
+  "id": "694fa739a0a34138fcee43d5",
+  "date": "2025-12-27T00:00:00.000Z",
+  "status": "Pending",
+  "time": "19:00"
+}
+{
+  "id": "6968a56952b1c57f5fc55d15",
+  "date": "2026-01-24T00:00:00.000Z",
+  "status": "approved",
+  "patient": "Samarth Kalavadia",
+  "time": "02:00 PM"
+}
+{
+  "id": "6968af823e6621fa2fd981d8",
+  "date": "2026-01-24T00:00:00.000Z",
+  "status": "approved",
+  "patient": "Samarth Kalavadia",
+  "time": "05:00 PM"
+}

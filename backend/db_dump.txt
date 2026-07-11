@@ -1,0 +1,7 @@
+--- PATIENTS ---
+6975b0524f03c9555dd3323a | krish 
+6975f57662eeaf77f5840d8f | Samarth Kalavadia
+
+--- APPOINTMENTS ---
+6975b0bb4f03c9555dd3324c | 2026-01-30T00:00:00.000Z | Rejected | krish | Time:05:00 PM | PID:6975b0524f03c9555dd3323a
+6975f9204869af5ba688f232 | 2026-01-30T00:00:00.000Z | Approved | Samarth Kalavadia | Time:02:00 PM | PID:6975f57662eeaf77f5840d8f
